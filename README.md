@@ -53,7 +53,7 @@ Configure your Supabase credentials:
 NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 SUPABASE_SERVICE_ROLE_KEY="your-service-role-key-for-admin-only"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3001"
 NEXT_PUBLIC_DEFAULT_TARGET_ATTENDANCE="85"
 ```
 
@@ -68,7 +68,7 @@ supabase/migrations/001_initial_schema.sql
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+Open [http://localhost:3001](http://localhost:3001) to view the application.
 
 ---
 

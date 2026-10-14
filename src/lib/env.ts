@@ -4,7 +4,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().default("https://placeholder-project.supabase.co"),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default("placeholder-anon-key"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
-  NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: z.string().default("http://localhost:3001"),
   NEXT_PUBLIC_DEFAULT_TARGET_ATTENDANCE: z.coerce.number().default(85),
 });
 
