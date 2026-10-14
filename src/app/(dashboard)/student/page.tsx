@@ -1,0 +1,260 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import {
+  GraduationCap,
+  CalendarCheck,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Download,
+  BookOpen,
+  ArrowRight,
+} from "lucide-react";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { TargetCalculator } from "@/components/student/TargetCalculator";
+import {
+  MOCK_STUDENT_USER,
+  MOCK_INSTITUTION,
+  MOCK_SUBJECTS,
+  MOCK_SESSIONS,
+} from "@/lib/data/mock-store";
+import { calculateAttendancePercentage } from "@/lib/attendance";
+
+export default function StudentDashboardPage() {
+  // Student: Aarav Sharma (ENG22CS001)
+  // Subject breakdown for CS501, CS502, CS503, CS504
+  const subjectsData = [
+    {
+      subject: MOCK_SUBJECTS[0], // CS501
+      totalHeld: 24,
+      present: 20,
+      absent: 4,
+    },
+    {
+      subject: MOCK_SUBJECTS[1], // CS502
+      totalHeld: 20,
+      present: 18,
+      absent: 2,
+    },
+    {
+      subject: MOCK_SUBJECTS[2], // CS503
+      totalHeld: 16,
+      present: 11,
+      absent: 5, // 68.75% -> Below 75% warning
+    },
+    {
+      subject: MOCK_SUBJECTS[3], // CS504
+      totalHeld: 0,
+      present: 0,
+      absent: 0, // Zero classes held -> "No attendance recorded"
+    },
+  ];
+
+  const totalHeldAll = subjectsData.reduce((acc, curr) => acc + curr.totalHeld, 0);
+  const totalPresentAll = subjectsData.reduce((acc, curr) => acc + curr.present, 0);
+  const totalAbsentAll = subjectsData.reduce((acc, curr) => acc + curr.absent, 0);
+
+  const overallPercentage = calculateAttendancePercentage(totalPresentAll, totalHeldAll);
+  const isOverallAtRisk = overallPercentage !== null && overallPercentage < 85;
+
+  return (
+    <DashboardShell
+      user={{
+        email: MOCK_STUDENT_USER.email,
+        role: "student",
+        fullName: MOCK_STUDENT_USER.fullName,
+        institutionName: MOCK_INSTITUTION.name,
+      }}
+      title="Student Attendance Portal"
+      subtitle={`SRN: ${MOCK_STUDENT_USER.identifier} • Computer Science (Sem 5, Section A)`}
+      action={
+        <Link href="/student/reports">
+          <Button variant="outline" size="sm" className="flex items-center space-x-1.5">
+            <Download className="h-4 w-4" />
+            <span>Attendance Transcript</span>
+          </Button>
+        </Link>
+      }
+    >
+      <div className="space-y-8">
+        {/* At Risk Warning Banner */}
+        {isOverallAtRisk && (
+          <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+            <div>
+              <span className="font-bold">Attendance Notice: </span>
+              Your overall attendance is currently at{" "}
+              <strong>{overallPercentage?.toFixed(1)}%</strong>, which is below the recommended 85% college requirement. Use the calculator below to plan your attendance recovery.
+            </div>
+          </div>
+        )}
+
+        {/* Aggregate Metric Highlights */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-slate-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase">
+                Overall Attendance
+              </span>
+              <GraduationCap className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold text-slate-900">
+                {overallPercentage !== null ? `${overallPercentage.toFixed(1)}%` : "N/A"}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Requirement: 85% minimum
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase">
+                Classes Attended
+              </span>
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold text-emerald-600">
+                {totalPresentAll}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Present sessions recorded
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase">
+                Classes Missed
+              </span>
+              <XCircle className="h-4 w-4 text-rose-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold text-rose-600">
+                {totalAbsentAll}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Absences recorded
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase">
+                Total Sessions Held
+              </span>
+              <CalendarCheck className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-extrabold text-slate-900">
+                {totalHeldAll}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Eligible submitted sessions
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Subject-Wise Attendance Breakdown */}
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 mb-4">
+            Course-Wise Attendance Breakdown
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {subjectsData.map((item) => {
+              const pct = calculateAttendancePercentage(item.present, item.totalHeld);
+              const isLow = pct !== null && pct < 75;
+
+              return (
+                <Card
+                  key={item.subject.id}
+                  className={`border transition-all ${
+                    isLow ? "border-rose-200 bg-rose-50/20" : "border-slate-200"
+                  }`}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="default" className="font-mono text-xs">
+                        {item.subject.code}
+                      </Badge>
+                      {pct !== null ? (
+                        <Badge variant={pct >= 85 ? "present" : isLow ? "absent" : "draft"}>
+                          {pct.toFixed(1)}%
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-slate-400">
+                          No sessions held
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-lg mt-2">
+                      {item.subject.name}
+                    </CardTitle>
+                    <CardDescription>
+                      {item.subject.credits} Credits • Computer Science
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent>
+                    {item.totalHeld > 0 ? (
+                      <div className="space-y-3">
+                        <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${
+                              (pct || 0) >= 85
+                                ? "bg-emerald-600"
+                                : (pct || 0) >= 75
+                                ? "bg-amber-500"
+                                : "bg-rose-600"
+                            }`}
+                            style={{ width: `${pct || 0}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
+                          <span className="text-emerald-700">
+                            {item.present} Present
+                          </span>
+                          <span className="text-rose-700">
+                            {item.absent} Absent
+                          </span>
+                          <span className="text-slate-500">
+                            {item.totalHeld} Total Classes
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-400 font-medium py-2">
+                        No attendance recorded yet for this semester.
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Projection Calculator */}
+        <div>
+          <TargetCalculator
+            presentCount={totalPresentAll}
+            totalHeld={totalHeldAll}
+            initialTarget={85}
+          />
+        </div>
+      </div>
+    </DashboardShell>
+  );
+}
