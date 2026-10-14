@@ -19,6 +19,11 @@ export default function NewAttendanceSessionPage() {
     name: item.profile.fullName,
     srn: item.profile.identifier || "SRN-UNKNOWN",
     rollNumber: item.enrollment.rollNumber || "01",
+    department: "Computer Science & Engineering",
+    semester: 5,
+    section: MOCK_SECTION_A.name,
+    statusType: "Regular",
+    photoUrl: "", // empty placeholder as requested, to be retrieved from database later
   }));
 
   const [todayStr, setTodayStr] = useState("2026-10-14");
