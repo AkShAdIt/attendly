@@ -64,6 +64,9 @@ export function SwipeAttendanceSession({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<string[]>([]);
 
+  // Exit animation state for realistic glide
+  const [swipeAnimation, setSwipeAnimation] = useState<"present" | "absent" | null>(null);
+
   // Review modal & submission state
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -79,16 +82,23 @@ export function SwipeAttendanceSession({
   const isAllMarked = students.every((s) => decisions[s.id] !== undefined);
 
   const markDecision = (studentId: string, status: DecisionStatus) => {
-    setDecisions((prev) => ({ ...prev, [studentId]: status }));
-    setHistory((prev) => [...prev, studentId]);
+    if (swipeAnimation) return;
+    setSwipeAnimation(status);
 
-    if (viewMode === "swipe" && currentIndex < students.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    }
+    setTimeout(() => {
+      setDecisions((prev) => ({ ...prev, [studentId]: status }));
+      setHistory((prev) => [...prev, studentId]);
+
+      if (viewMode === "swipe" && currentIndex < students.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+      }
+      setSwipeAnimation(null);
+      setDragOffset(0);
+    }, 260);
   };
 
   const handleUndo = () => {
-    if (history.length === 0) return;
+    if (history.length === 0 || swipeAnimation) return;
     const lastStudentId = history[history.length - 1];
     setHistory((prev) => prev.slice(0, -1));
 
@@ -116,7 +126,7 @@ export function SwipeAttendanceSession({
   // Keyboard navigation shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isReviewOpen || isSuccess) return;
+      if (isReviewOpen || isSuccess || swipeAnimation) return;
 
       if (e.key === "ArrowLeft") {
         if (currentStudent) markDecision(currentStudent.id, "absent");
@@ -129,58 +139,58 @@ export function SwipeAttendanceSession({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, currentStudent, isReviewOpen, isSuccess, history]);
+  }, [currentIndex, currentStudent, isReviewOpen, isSuccess, history, swipeAnimation]);
 
   // Mouse & Touch Swipe Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (swipeAnimation) return;
     setIsDragging(true);
     dragStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || swipeAnimation) return;
     const currentX = e.touches[0].clientX;
     const diff = currentX - dragStartX.current;
     setDragOffset(diff);
   };
 
   const handleTouchEnd = () => {
-    if (!isDragging) return;
+    if (!isDragging || swipeAnimation) return;
     setIsDragging(false);
 
     if (dragOffset > 75) {
-      // Swiped Right -> Present
       if (currentStudent) markDecision(currentStudent.id, "present");
     } else if (dragOffset < -75) {
-      // Swiped Left -> Absent
       if (currentStudent) markDecision(currentStudent.id, "absent");
+    } else {
+      setDragOffset(0);
     }
-
-    setDragOffset(0);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (swipeAnimation) return;
     setIsDragging(true);
     dragStartX.current = e.clientX;
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || swipeAnimation) return;
     const diff = e.clientX - dragStartX.current;
     setDragOffset(diff);
   };
 
   const handleMouseUp = () => {
-    if (!isDragging) return;
+    if (!isDragging || swipeAnimation) return;
     setIsDragging(false);
 
     if (dragOffset > 75) {
       if (currentStudent) markDecision(currentStudent.id, "present");
     } else if (dragOffset < -75) {
       if (currentStudent) markDecision(currentStudent.id, "absent");
+    } else {
+      setDragOffset(0);
     }
-
-    setDragOffset(0);
   };
 
   const handleFinalSubmit = async () => {
@@ -237,9 +247,46 @@ export function SwipeAttendanceSession({
   const markedCount = Object.keys(decisions).length;
   const progressPercent = (markedCount / students.length) * 100;
 
-  // Visual card rotation & physics
-  const cardRotation = (dragOffset / 22).toFixed(1);
-  const cardOpacity = Math.max(0.65, 1 - Math.abs(dragOffset) / 350);
+  // Visual card physics & dynamic transformations
+  const cardRotation = swipeAnimation === "present"
+    ? 24
+    : swipeAnimation === "absent"
+    ? -24
+    : Number((dragOffset / 18).toFixed(1));
+
+  const cardTranslateX = swipeAnimation === "present"
+    ? 480
+    : swipeAnimation === "absent"
+    ? -480
+    : dragOffset;
+
+  const cardOpacity = swipeAnimation
+    ? 0
+    : Math.max(0.65, 1 - Math.abs(dragOffset) / 450);
+
+  const cardScale = isDragging
+    ? 1.02
+    : swipeAnimation
+    ? 0.92
+    : 1.0;
+
+  // Stamp indicator opacity calculation
+  const presentStampOpacity = swipeAnimation === "present"
+    ? 1
+    : dragOffset > 15
+    ? Math.min(1, (dragOffset - 15) / 55)
+    : 0;
+
+  const absentStampOpacity = swipeAnimation === "absent"
+    ? 1
+    : dragOffset < -15
+    ? Math.min(1, (-dragOffset - 15) / 55)
+    : 0;
+
+  // Dynamic ghost card reaction
+  const dragRatio = Math.max(-1, Math.min(1, dragOffset / 150));
+  const leftGhostScale = 0.90 + Math.max(0, -dragRatio) * 0.06;
+  const rightGhostScale = 0.90 + Math.max(0, dragRatio) * 0.06;
 
   if (isSuccess) {
     return (
@@ -340,11 +387,19 @@ export function SwipeAttendanceSession({
             {/* LEFT BACKGROUND CARD (Absent Representation - Rotated & Tilted) */}
             <div
               data-ui="ghost-card"
-              className="absolute left-1/2 -translate-x-[72%] sm:-translate-x-[68%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-rose-100 border-2 border-rose-200/60 rotate-[-10deg] scale-90 -z-10 pointer-events-none p-3.5 flex flex-col justify-between"
+              className="absolute left-1/2 -translate-x-[72%] sm:-translate-x-[68%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-rose-100 border-2 border-rose-200/80 -z-10 pointer-events-none p-3.5 flex flex-col justify-between transition-transform duration-200"
+              style={{
+                transform: `translateX(-70%) rotate(-10deg) scale(${leftGhostScale})`,
+                boxShadow: "0 16px 36px -8px rgba(225, 29, 72, 0.16)", // taste-skill-ignore
+                filter: "blur(0.5px)",
+              }}
             >
               {/* Ghost Photo Placeholder */}
-              <div className="w-full aspect-[4/3] rounded-[22px] bg-rose-200/50 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-rose-500 text-white ring-4 ring-rose-200/70 flex items-center justify-center">
+              <div className="w-full aspect-[4/3] rounded-[22px] bg-rose-200/60 flex items-center justify-center">
+                <div
+                  className="h-16 w-16 rounded-full bg-rose-500 text-white ring-4 ring-rose-200/80 flex items-center justify-center"
+                  style={{ boxShadow: "0 10px 24px rgba(244, 63, 94, 0.35)" }} // taste-skill-ignore
+                >
                   <X className="h-8 w-8 stroke-[3]" />
                 </div>
               </div>
@@ -359,11 +414,19 @@ export function SwipeAttendanceSession({
             {/* RIGHT BACKGROUND CARD (Present Representation - Rotated & Tilted) */}
             <div
               data-ui="ghost-card"
-              className="absolute left-1/2 -translate-x-[28%] sm:-translate-x-[32%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-emerald-100 border-2 border-emerald-200/60 rotate-[10deg] scale-90 -z-10 pointer-events-none p-3.5 flex flex-col justify-between"
+              className="absolute left-1/2 -translate-x-[28%] sm:-translate-x-[32%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-emerald-100 border-2 border-emerald-200/80 -z-10 pointer-events-none p-3.5 flex flex-col justify-between transition-transform duration-200"
+              style={{
+                transform: `translateX(-30%) rotate(10deg) scale(${rightGhostScale})`,
+                boxShadow: "0 16px 36px -8px rgba(16, 185, 129, 0.16)", // taste-skill-ignore
+                filter: "blur(0.5px)",
+              }}
             >
               {/* Ghost Photo Placeholder */}
-              <div className="w-full aspect-[4/3] rounded-[22px] bg-emerald-200/50 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-emerald-500 text-white ring-4 ring-emerald-200/70 flex items-center justify-center">
+              <div className="w-full aspect-[4/3] rounded-[22px] bg-emerald-200/60 flex items-center justify-center">
+                <div
+                  className="h-16 w-16 rounded-full bg-emerald-500 text-white ring-4 ring-emerald-200/80 flex items-center justify-center"
+                  style={{ boxShadow: "0 10px 24px rgba(16, 185, 129, 0.35)" }} // taste-skill-ignore
+                >
                   <Check className="h-8 w-8 stroke-[3]" />
                 </div>
               </div>
@@ -375,11 +438,38 @@ export function SwipeAttendanceSession({
               </div>
             </div>
 
+            {/* Optional Peek Card Behind Foreground (Stack Depth) */}
+            {nextStudent && (
+              <div
+                data-ui="stack-peek"
+                className="absolute z-10 w-full max-w-[305px] sm:max-w-[330px] rounded-[32px] bg-white p-3.5 sm:p-4 border border-slate-200/80 pointer-events-none"
+                style={{
+                  transform: "translateY(12px) scale(0.94)",
+                  opacity: 0.8,
+                  filter: "blur(0.8px)",
+                  boxShadow: "0 12px 30px -8px rgba(15, 23, 42, 0.08)", // taste-skill-ignore
+                }}
+              >
+                <div className="w-full aspect-[4/3] rounded-[24px] bg-slate-100/90 flex items-center justify-center">
+                  <User className="h-10 w-10 text-slate-300" />
+                </div>
+                <div className="pt-4 pb-2 text-center opacity-40">
+                  <div className="h-5 w-32 bg-slate-200 rounded-full mx-auto" />
+                  <div className="h-3 w-20 bg-slate-100 rounded-full mx-auto mt-2" />
+                </div>
+              </div>
+            )}
+
             {/* LEFT ACTION TRIGGER (Swipe Left / Mark Absent) */}
             <div className="hidden md:flex flex-col items-center absolute left-2 lg:left-6 z-20">
               <button
                 onClick={() => markDecision(currentStudent.id, "absent")}
-                className="h-12 w-12 rounded-full bg-rose-50 border border-rose-200/80 text-rose-500 hover:bg-rose-100 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer"
+                className={`h-12 w-12 rounded-full border text-rose-500 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer ${
+                  dragOffset < -20
+                    ? "bg-rose-100 border-rose-300 scale-105"
+                    : "bg-rose-50 border-rose-200/80"
+                }`}
+                style={{ boxShadow: "0 8px 20px -4px rgba(244, 63, 94, 0.2)" }} // taste-skill-ignore
                 title="Mark Absent (Arrow Left)"
               >
                 <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
@@ -404,23 +494,54 @@ export function SwipeAttendanceSession({
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
-              className="relative z-20 w-full max-w-[320px] sm:max-w-[350px] rounded-[32px] bg-white p-3.5 sm:p-4 border border-slate-200 select-none cursor-grab active:cursor-grabbing transition-transform duration-100 ease-out"
+              className="relative z-20 w-full max-w-[320px] sm:max-w-[350px] rounded-[32px] bg-white p-3.5 sm:p-4 border border-slate-200 select-none cursor-grab active:cursor-grabbing"
               style={{
-                transform: `translateX(${dragOffset}px) rotate(${cardRotation}deg)`,
+                transform: `translateX(${cardTranslateX}px) rotate(${cardRotation}deg) scale(${cardScale})`,
                 opacity: cardOpacity,
+                transition: isDragging
+                  ? "none"
+                  : "transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 240ms ease-out",
+                boxShadow: isDragging // taste-skill-ignore
+                  ? "0 30px 60px -12px rgba(15,23,42,0.22), 0 10px 20px -5px rgba(15,23,42,0.08)"
+                  : "0 20px 48px -12px rgba(15,23,42,0.14), 0 8px 16px -4px rgba(15,23,42,0.04)",
               }}
             >
-              {/* Visual stamp indicators on drag */}
-              {dragOffset > 35 && (
-                <div className="absolute top-6 left-6 z-30 flex items-center rounded-2xl bg-emerald-500 px-3.5 py-1.5 text-xs font-extrabold text-white animate-in fade-in-50">
-                  <Check className="h-4 w-4 mr-1 stroke-[3]" /> PRESENT
-                </div>
-              )}
-              {dragOffset < -35 && (
-                <div className="absolute top-6 right-6 z-30 flex items-center rounded-2xl bg-rose-500 px-3.5 py-1.5 text-xs font-extrabold text-white animate-in fade-in-50">
-                  ABSENT <X className="h-4 w-4 ml-1 stroke-[3]" />
-                </div>
-              )}
+              {/* Diffused Ambient Glow Behind Active Card while dragging */}
+              <div
+                className="absolute inset-0 -z-10 rounded-[32px] opacity-70 transition-colors duration-200 pointer-events-none"
+                style={{
+                  filter: "blur(24px)",
+                  backgroundColor:
+                    dragOffset > 25 || swipeAnimation === "present"
+                      ? "rgba(16, 185, 129, 0.22)"
+                      : dragOffset < -25 || swipeAnimation === "absent"
+                      ? "rgba(244, 63, 94, 0.22)"
+                      : "rgba(148, 163, 184, 0.12)",
+                }}
+              />
+
+              {/* Dynamic Smooth Stamp Indicators */}
+              <div
+                className="absolute top-6 left-6 z-30 pointer-events-none flex items-center rounded-2xl bg-emerald-500 px-3.5 py-1.5 text-xs font-extrabold text-white transition-opacity duration-150"
+                style={{
+                  opacity: presentStampOpacity,
+                  transform: `scale(${0.85 + 0.15 * presentStampOpacity}) rotate(-8deg)`,
+                  boxShadow: "0 8px 20px rgba(16, 185, 129, 0.4)", // taste-skill-ignore
+                }}
+              >
+                <Check className="h-4 w-4 mr-1 stroke-[3]" /> PRESENT
+              </div>
+
+              <div
+                className="absolute top-6 right-6 z-30 pointer-events-none flex items-center rounded-2xl bg-rose-500 px-3.5 py-1.5 text-xs font-extrabold text-white transition-opacity duration-150"
+                style={{
+                  opacity: absentStampOpacity,
+                  transform: `scale(${0.85 + 0.15 * absentStampOpacity}) rotate(8deg)`,
+                  boxShadow: "0 8px 20px rgba(244, 63, 94, 0.4)", // taste-skill-ignore
+                }}
+              >
+                ABSENT <X className="h-4 w-4 ml-1 stroke-[3]" />
+              </div>
 
               {/* Photo Viewport (Empty placeholder ready for database retrieval) */}
               <div className="relative w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border border-slate-200/60 flex flex-col items-center justify-center text-slate-400">
@@ -432,14 +553,23 @@ export function SwipeAttendanceSession({
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center">
-                    <div className="h-20 w-20 rounded-full bg-slate-200/80 border border-white/60 flex items-center justify-center text-slate-400">
+                    <div
+                      className="h-20 w-20 rounded-full bg-slate-200/80 border border-white/60 flex items-center justify-center text-slate-400"
+                      style={{ boxShadow: "inset 0 2px 4px rgba(0,0,0,0.06)" }} // taste-skill-ignore
+                    >
                       <User className="h-10 w-10 text-slate-400" />
                     </div>
                   </div>
                 )}
 
-                {/* Floating Index Counter Badge (Top Right) */}
-                <div className="absolute top-3 right-3 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-700 border border-slate-200">
+                {/* Floating Index Counter Badge (Top Right) with Glass Frosting */}
+                <div
+                  className="absolute top-3 right-3 rounded-full bg-white/85 px-3 py-1 text-xs font-bold text-slate-700 border border-white/60"
+                  style={{
+                    backdropFilter: "blur(8px)", // taste-skill-ignore
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.06)", // taste-skill-ignore
+                  }}
+                >
                   {currentIndex + 1}/{students.length}
                 </div>
               </div>
@@ -475,7 +605,12 @@ export function SwipeAttendanceSession({
             <div className="hidden md:flex flex-col items-center absolute right-2 lg:right-6 z-20">
               <button
                 onClick={() => markDecision(currentStudent.id, "present")}
-                className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer"
+                className={`h-12 w-12 rounded-full border text-emerald-600 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer ${
+                  dragOffset > 20
+                    ? "bg-emerald-100 border-emerald-300 scale-105"
+                    : "bg-emerald-50 border-emerald-200/80"
+                }`}
+                style={{ boxShadow: "0 8px 20px -4px rgba(16, 185, 129, 0.2)" }} // taste-skill-ignore
                 title="Mark Present (Arrow Right)"
               >
                 <ArrowRight className="h-5 w-5 stroke-[2.5]" />
