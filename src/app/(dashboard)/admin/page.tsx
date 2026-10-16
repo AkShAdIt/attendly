@@ -87,18 +87,18 @@ export default function AdminDashboardPage() {
         </Button>
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-8" data-ui="admin-overview">
         {/* Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-ui="metrics-grid">
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Total Enrolled
               </span>
               <GraduationCap className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
+              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
                 {studentsList.length} Students
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -107,15 +107,15 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Active Faculty
               </span>
               <Users className="h-4 w-4 text-emerald-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
+              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
                 2 Teachers
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -124,15 +124,15 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
-                Subjects / Courses
+              <span className="text-xs font-semibold text-slate-600">
+                Subjects & Courses
               </span>
-              <BookOpen className="h-4 w-4 text-purple-600" />
+              <BookOpen className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
+              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
                 {MOCK_SUBJECTS.length} Subjects
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -141,15 +141,15 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Attendance Recorded
               </span>
               <CalendarCheck2 className="h-4 w-4 text-amber-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900">
+              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
                 {MOCK_SESSIONS.length} Sessions
               </div>
               <p className="text-xs text-emerald-600 font-semibold mt-1">
@@ -161,16 +161,16 @@ export default function AdminDashboardPage() {
 
         {/* Collapsible Bulk Importer */}
         {showImporter && (
-          <div className="transition-all animate-in fade-in-50 duration-200">
+          <div className="transition-opacity animate-in fade-in-50 duration-200" data-ui="importer-panel">
             <RosterImporter onImportComplete={handleImportComplete} />
           </div>
         )}
 
         {/* Student Directory Table */}
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 bg-white" data-ui="data-table">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle>Enrolled Student Directory</CardTitle>
+              <CardTitle className="font-chillax tracking-tight">Enrolled Student Directory</CardTitle>
               <CardDescription>
                 Search, verify, and monitor student institutional profiles and section enrollments.
               </CardDescription>
@@ -190,25 +190,25 @@ export default function AdminDashboardPage() {
           </CardHeader>
 
           <CardContent>
-            <div className="rounded-xl border border-slate-200 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs uppercase tracking-wider">
+            <div className="rounded-xl border border-slate-200 overflow-x-auto" data-ui="table-wrapper">
+              <table className="w-full text-left text-sm" data-ui="table">
+                <thead data-ui="table-head" className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs font-semibold">
                   <tr>
-                    <th className="p-3.5 font-semibold">Roll</th>
-                    <th className="p-3.5 font-semibold">Student Identifier</th>
-                    <th className="p-3.5 font-semibold">Full Name</th>
-                    <th className="p-3.5 font-semibold">Section</th>
-                    <th className="p-3.5 font-semibold">Email</th>
-                    <th className="p-3.5 font-semibold text-right">Status</th>
+                    <th className="p-3.5">Roll</th>
+                    <th className="p-3.5">Student Identifier</th>
+                    <th className="p-3.5">Full Name</th>
+                    <th className="p-3.5">Section</th>
+                    <th className="p-3.5">Email</th>
+                    <th className="p-3.5 text-right">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody data-ui="table-body" className="divide-y divide-slate-100 bg-white">
                   {filteredStudents.slice(0, 15).map((item) => (
                     <tr key={item.profile.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3.5 font-mono text-slate-500 font-medium">
+                      <td className="p-3.5 tabular-nums text-slate-500 font-medium">
                         {item.enrollment.rollNumber || "—"}
                       </td>
-                      <td className="p-3.5 font-mono font-bold text-slate-900">
+                      <td className="p-3.5 tabular-nums font-bold text-slate-900">
                         {item.profile.identifier}
                       </td>
                       <td className="p-3.5 font-semibold text-slate-800">

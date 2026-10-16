@@ -23,14 +23,14 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 pb-20 md:pb-8">
+    <div className="min-h-[100dvh] flex flex-col bg-[#f8fafc] text-[#0f172a] pb-20 md:pb-8">
       <Navbar user={user} />
 
-      <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 flex-1">
+      <main className="mx-auto w-full max-w-6xl px-4 sm:px-6 pt-6 sm:pt-8 flex-1">
         {/* Page Title Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200/80 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               {title}
             </h1>
             {subtitle && (

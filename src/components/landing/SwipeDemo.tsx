@@ -94,17 +94,18 @@ export function SwipeDemo() {
   const absentCount = history.filter((h) => h.status === "absent").length;
 
   return (
-    <div className="relative mx-auto w-full max-w-md select-none">
+    <div data-ui="swipe-demo" className="relative mx-auto w-full max-w-md select-none">
       
       {/* 3D Stack Stage */}
       <div className="relative flex items-center justify-center min-h-[420px] sm:min-h-[460px]">
 
         {/* LEFT CARD (Absent Ghost Tilted Card) */}
         <div
-          className="absolute left-1/2 -translate-x-[74%] sm:-translate-x-[70%] top-2 w-[260px] sm:w-[290px] aspect-[3/4] rounded-[32px] bg-linear-to-br from-rose-100/90 to-rose-200/60 border-2 border-rose-200/60 shadow-xl shadow-rose-900/5 rotate-[-10deg] scale-90 -z-10 transition-all pointer-events-none p-3.5 flex flex-col justify-between"
+          data-ui="ghost-card"
+          className="absolute left-1/2 -translate-x-[74%] sm:-translate-x-[70%] top-2 w-[260px] sm:w-[290px] aspect-[3/4] rounded-[32px] bg-rose-100 border-2 border-rose-200/60 rotate-[-10deg] scale-90 -z-10 pointer-events-none p-3.5 flex flex-col justify-between"
         >
           <div className="w-full aspect-[4/3] rounded-[22px] bg-rose-200/50 flex items-center justify-center">
-            <div className="h-14 w-14 rounded-full bg-rose-500 text-white shadow-xl shadow-rose-500/40 ring-4 ring-rose-200/70 flex items-center justify-center">
+            <div className="h-14 w-14 rounded-full bg-rose-500 text-white ring-4 ring-rose-200/70 flex items-center justify-center">
               <X className="h-7 w-7 stroke-[3]" />
             </div>
           </div>
@@ -116,10 +117,11 @@ export function SwipeDemo() {
 
         {/* RIGHT CARD (Present Ghost Tilted Card) */}
         <div
-          className="absolute left-1/2 -translate-x-[26%] sm:-translate-x-[30%] top-2 w-[260px] sm:w-[290px] aspect-[3/4] rounded-[32px] bg-linear-to-bl from-emerald-100/90 to-emerald-200/60 border-2 border-emerald-200/60 shadow-xl shadow-emerald-900/5 rotate-[10deg] scale-90 -z-10 transition-all pointer-events-none p-3.5 flex flex-col justify-between"
+          data-ui="ghost-card"
+          className="absolute left-1/2 -translate-x-[26%] sm:-translate-x-[30%] top-2 w-[260px] sm:w-[290px] aspect-[3/4] rounded-[32px] bg-emerald-100 border-2 border-emerald-200/60 rotate-[10deg] scale-90 -z-10 pointer-events-none p-3.5 flex flex-col justify-between"
         >
           <div className="w-full aspect-[4/3] rounded-[22px] bg-emerald-200/50 flex items-center justify-center">
-            <div className="h-14 w-14 rounded-full bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 ring-4 ring-emerald-200/70 flex items-center justify-center">
+            <div className="h-14 w-14 rounded-full bg-emerald-500 text-white ring-4 ring-emerald-200/70 flex items-center justify-center">
               <Check className="h-7 w-7 stroke-[3]" />
             </div>
           </div>
@@ -133,7 +135,7 @@ export function SwipeDemo() {
         <div className="hidden sm:flex flex-col items-center absolute -left-8 lg:-left-12 z-20">
           <button
             onClick={() => handleDecision("absent")}
-            className="h-11 w-11 rounded-full bg-rose-50 border border-rose-200 text-rose-500 hover:bg-rose-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center shadow-xs cursor-pointer"
+            className="h-11 w-11 rounded-full bg-rose-50 border border-rose-200 text-rose-500 hover:bg-rose-100 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer"
             title="Swipe Left: Absent"
           >
             <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
@@ -151,7 +153,8 @@ export function SwipeDemo() {
         {/* CENTER ACTIVE CARD */}
         {!isFinished ? (
           <div
-            className={`relative z-20 w-full max-w-[300px] sm:max-w-[330px] rounded-[32px] bg-white p-3.5 sm:p-4 shadow-[0_20px_50px_rgba(15,23,42,0.12)] border border-slate-100 transition-all duration-200 ${
+            data-ui="active-card"
+            className={`relative z-20 w-full max-w-[300px] sm:max-w-[330px] rounded-[32px] bg-white p-3.5 sm:p-4 border border-slate-200 transition-colors duration-200 ${
               lastAction === "present"
                 ? "border-emerald-300 ring-2 ring-emerald-100"
                 : lastAction === "absent"
@@ -160,23 +163,23 @@ export function SwipeDemo() {
             }`}
           >
             {/* Empty Photo Placeholder Area */}
-            <div className="relative w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-linear-to-b from-slate-100 via-slate-100 to-slate-200/90 border border-slate-200/60 flex flex-col items-center justify-center text-slate-400">
-              <div className="h-16 w-16 rounded-full bg-slate-200/80 border border-white/60 flex items-center justify-center text-slate-400 shadow-inner">
+            <div className="relative w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border border-slate-200/60 flex flex-col items-center justify-center text-slate-400">
+              <div className="h-16 w-16 rounded-full bg-slate-200/80 border border-white/60 flex items-center justify-center text-slate-400">
                 <User className="h-8 w-8 text-slate-400" />
               </div>
 
               {/* Floating Counter Badge in Top-Right */}
-              <div className="absolute top-3 right-3 rounded-full bg-white/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-slate-700 shadow-xs border border-white/60">
+              <div className="absolute top-3 right-3 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-700 border border-slate-200">
                 {currentIndex + 1}/{DEMO_STUDENTS.length}
               </div>
             </div>
 
             {/* Student Info */}
             <div className="pt-4 pb-2 text-center">
-              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+              <h3 className="font-chillax text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                 {currentStudent.name}
               </h3>
-              <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5 font-mono">
+              <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5 tabular-nums">
                 {currentStudent.srn}
               </p>
               <p className="text-xs text-slate-400 mt-1 font-medium">
@@ -188,7 +191,7 @@ export function SwipeDemo() {
                 <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-semibold text-blue-600 border border-blue-100/80">
                   {currentStudent.semester}
                 </span>
-                <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-[11px] font-semibold text-purple-600 border border-purple-100/80">
+                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700 border border-slate-200">
                   {currentStudent.section}
                 </span>
                 <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 border border-emerald-100/80">
@@ -198,12 +201,12 @@ export function SwipeDemo() {
             </div>
           </div>
         ) : (
-          <div className="relative z-20 w-full max-w-[320px] rounded-[32px] bg-white p-6 shadow-xl border border-slate-100 text-center">
+          <div data-ui="completed-card" className="relative z-20 w-full max-w-[320px] rounded-[32px] bg-white p-6 border border-slate-200 text-center">
             <div className="h-14 w-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
               <Sparkles className="h-7 w-7" />
             </div>
-            <h4 className="text-lg font-bold text-slate-900">Batch Completed!</h4>
-            <p className="text-xs text-slate-500 mt-1">
+            <h4 className="font-chillax text-lg font-bold text-slate-900">Batch Completed!</h4>
+            <p className="text-xs text-slate-500 mt-1 tabular-nums">
               {presentCount} present, {absentCount} absent.
             </p>
             <Button size="sm" variant="outline" className="mt-4 rounded-xl" onClick={handleReset}>
@@ -216,7 +219,7 @@ export function SwipeDemo() {
         <div className="hidden sm:flex flex-col items-center absolute -right-8 lg:-right-12 z-20">
           <button
             onClick={() => handleDecision("present")}
-            className="h-11 w-11 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center shadow-xs cursor-pointer"
+            className="h-11 w-11 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer"
             title="Swipe Right: Present"
           >
             <ArrowRight className="h-5 w-5 stroke-[2.5]" />
@@ -239,9 +242,9 @@ export function SwipeDemo() {
           return (
             <div
               key={dotIdx}
-              className={`rounded-full transition-all duration-300 ${
+              className={`rounded-full transition-colors duration-200 ${
                 isActive
-                  ? "w-2.5 h-2.5 bg-blue-600 shadow-xs"
+                  ? "w-2.5 h-2.5 bg-blue-600"
                   : "w-1.5 h-1.5 bg-blue-200/80"
               }`}
             />

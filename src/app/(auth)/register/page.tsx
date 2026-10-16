@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { CheckCheck, Building2, User, Mail, KeyRound, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,11 +26,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-6">
+    <div className="min-h-[100dvh] flex flex-col justify-center items-center bg-[#f8fafc] px-4 py-12 sm:px-6">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-8">
         <Link href="/" className="inline-flex items-center space-x-2.5">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/25">
-            <CheckCheck className="h-6 w-6 stroke-[2.5]" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#0f172a] text-white">
+            <CheckCheck className="h-5 w-5 stroke-[2.5]" />
           </div>
           <span className="text-2xl font-extrabold tracking-tight text-slate-900">
             Attendly
@@ -42,96 +41,94 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      <div className="w-full max-w-lg">
-        <Card className="border-slate-200 shadow-xl shadow-slate-900/5">
-          <CardHeader>
-            <CardTitle className="text-xl">Register Institution</CardTitle>
-            <CardDescription>
+      <div className="w-full max-w-lg" data-ui="auth-form">
+        <div className="rounded-3xl bg-white border border-slate-200 p-8">
+          <div className="pb-4">
+            <h2 className="text-xl font-bold text-slate-900">Register Institution</h2>
+            <p className="text-xs text-slate-500 mt-1">
               Initialize a college workspace and configure the root administrator.
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 flex items-center">
-                    <Building2 className="h-3.5 w-3.5 mr-1 text-slate-400" /> College Name
-                  </label>
-                  <Input
-                    required
-                    placeholder="e.g. Apex Engineering College"
-                    value={institutionName}
-                    onChange={(e) => setInstitutionName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700">
-                    College Code
-                  </label>
-                  <Input
-                    required
-                    placeholder="e.g. AEC-01"
-                    value={institutionCode}
-                    onChange={(e) => setInstitutionCode(e.target.value)}
-                  />
-                </div>
-              </div>
-
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center">
-                  <User className="h-3.5 w-3.5 mr-1 text-slate-400" /> Administrator Full Name
+                <label className="text-xs font-bold text-slate-700 flex items-center">
+                  <Building2 className="h-3.5 w-3.5 mr-1 text-slate-400" /> College Name
                 </label>
                 <Input
                   required
-                  placeholder="e.g. Dr. Ramesh Kumar"
-                  value={adminName}
-                  onChange={(e) => setAdminName(e.target.value)}
+                  placeholder="Apex Engineering College"
+                  value={institutionName}
+                  onChange={(e) => setInstitutionName(e.target.value)}
                 />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center">
-                  <Mail className="h-3.5 w-3.5 mr-1 text-slate-400" /> Official Admin Email
+                <label className="text-xs font-bold text-slate-700">
+                  College Code
                 </label>
                 <Input
-                  type="email"
                   required
-                  placeholder="admin@college.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="AEC-01"
+                  value={institutionCode}
+                  onChange={(e) => setInstitutionCode(e.target.value)}
                 />
               </div>
+            </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 flex items-center">
-                  <KeyRound className="h-3.5 w-3.5 mr-1 text-slate-400" /> Master Password
-                </label>
-                <Input
-                  type="password"
-                  required
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 flex items-center">
+                <User className="h-3.5 w-3.5 mr-1 text-slate-400" /> Administrator Full Name
+              </label>
+              <Input
+                required
+                placeholder="Dr. Ramesh Kumar"
+                value={adminName}
+                onChange={(e) => setAdminName(e.target.value)}
+              />
+            </div>
 
-              <div className="pt-2">
-                <Button type="submit" className="w-full" isLoading={isLoading}>
-                  Create Institution & Admin Account
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 flex items-center">
+                <Mail className="h-3.5 w-3.5 mr-1 text-slate-400" /> Official Admin Email
+              </label>
+              <Input
+                type="email"
+                required
+                placeholder="admin@college.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-            <CardFooter className="justify-center border-t border-slate-100 pt-4 text-xs text-slate-500">
-              Already have an account?{" "}
-              <Link href="/login" className="text-blue-600 font-semibold hover:underline ml-1">
-                Sign In
-              </Link>
-            </CardFooter>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 flex items-center">
+                <KeyRound className="h-3.5 w-3.5 mr-1 text-slate-400" /> Master Password
+              </label>
+              <Input
+                type="password"
+                required
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="pt-2">
+              <Button type="submit" className="w-full py-3.5" isLoading={isLoading}>
+                Create Institution & Admin Account
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </form>
-        </Card>
+
+          <div className="pt-6 text-center text-xs text-slate-500">
+            Already have an account?{" "}
+            <Link href="/login" className="text-blue-600 font-bold hover:underline ml-1">
+              Sign In
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

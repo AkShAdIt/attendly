@@ -98,24 +98,19 @@ export function SwipeAttendanceSession({
       return updated;
     });
 
-    const studentIdx = students.findIndex((s) => s.id === lastStudentId);
-    if (studentIdx !== -1) {
-      setCurrentIndex(studentIdx);
+    if (viewMode === "swipe" && currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
     }
   };
 
   const handleMarkAllRemainingPresent = () => {
     const updated = { ...decisions };
-    const newlyMarked: string[] = [];
     students.forEach((s) => {
-      if (!updated[s.id]) {
+      if (updated[s.id] === undefined) {
         updated[s.id] = "present";
-        newlyMarked.push(s.id);
       }
     });
     setDecisions(updated);
-    setHistory((prev) => [...prev, ...newlyMarked]);
-    setCurrentIndex(students.length - 1);
   };
 
   // Keyboard navigation shortcuts
@@ -123,20 +118,20 @@ export function SwipeAttendanceSession({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isReviewOpen || isSuccess) return;
 
-      if (e.key === "ArrowRight") {
-        if (currentStudent) markDecision(currentStudent.id, "present");
-      } else if (e.key === "ArrowLeft") {
+      if (e.key === "ArrowLeft") {
         if (currentStudent) markDecision(currentStudent.id, "absent");
-      } else if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+      } else if (e.key === "ArrowRight") {
+        if (currentStudent) markDecision(currentStudent.id, "present");
+      } else if (e.key === "Backspace" || (e.metaKey && e.key === "z")) {
         handleUndo();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex, isReviewOpen, isSuccess, currentStudent]);
+  }, [currentIndex, currentStudent, isReviewOpen, isSuccess, history]);
 
-  // Touch gesture listeners
+  // Mouse & Touch Swipe Handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
     dragStartX.current = e.touches[0].clientX;
@@ -153,15 +148,17 @@ export function SwipeAttendanceSession({
     if (!isDragging) return;
     setIsDragging(false);
 
-    if (dragOffset > 85 && currentStudent) {
-      markDecision(currentStudent.id, "present");
-    } else if (dragOffset < -85 && currentStudent) {
-      markDecision(currentStudent.id, "absent");
+    if (dragOffset > 75) {
+      // Swiped Right -> Present
+      if (currentStudent) markDecision(currentStudent.id, "present");
+    } else if (dragOffset < -75) {
+      // Swiped Left -> Absent
+      if (currentStudent) markDecision(currentStudent.id, "absent");
     }
+
     setDragOffset(0);
   };
 
-  // Mouse drag support for desktop simulation
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     dragStartX.current = e.clientX;
@@ -177,36 +174,66 @@ export function SwipeAttendanceSession({
     if (!isDragging) return;
     setIsDragging(false);
 
-    if (dragOffset > 85 && currentStudent) {
-      markDecision(currentStudent.id, "present");
-    } else if (dragOffset < -85 && currentStudent) {
-      markDecision(currentStudent.id, "absent");
+    if (dragOffset > 75) {
+      if (currentStudent) markDecision(currentStudent.id, "present");
+    } else if (dragOffset < -75) {
+      if (currentStudent) markDecision(currentStudent.id, "absent");
     }
+
     setDragOffset(0);
   };
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
     setIsSubmitting(true);
-    const presentIds = Object.keys(decisions).filter((id) => decisions[id] === "present");
-    const absentIds = Object.keys(decisions).filter((id) => decisions[id] === "absent");
+    try {
+      const presentIds = Object.entries(decisions)
+        .filter(([_, status]) => status === "present")
+        .map(([id]) => id);
+      const absentIds = Object.entries(decisions)
+        .filter(([_, status]) => status === "absent")
+        .map(([id]) => id);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const payload = {
+        sectionId: "sec-5a",
+        subjectId: "sub-cs501",
+        sessionDate,
+        period,
+        notes: `Recorded via Attendly Stack Deck • ${presentIds.length} present, ${absentIds.length} absent`,
+        records: students.map((s) => ({
+          studentId: s.id,
+          status: decisions[s.id] || "absent",
+        })),
+      };
+
+      const res = await fetch("/api/attendance/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Submission failed");
+      }
+
       setIsReviewOpen(false);
       setIsSuccess(true);
-
       if (onSessionSubmitted) {
         onSessionSubmitted({
-          sessionId: `sess-${Date.now()}`,
+          sessionId: data.sessionId,
           presentIds,
           absentIds,
         });
       }
-    }, 800);
+    } catch (err: any) {
+      alert(`Submission Error: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const presentCount = Object.values(decisions).filter((s) => s === "present").length;
-  const absentCount = Object.values(decisions).filter((s) => s === "absent").length;
+  const presentCount = Object.values(decisions).filter((v) => v === "present").length;
+  const absentCount = Object.values(decisions).filter((v) => v === "absent").length;
   const markedCount = Object.keys(decisions).length;
   const progressPercent = (markedCount / students.length) * 100;
 
@@ -216,23 +243,23 @@ export function SwipeAttendanceSession({
 
   if (isSuccess) {
     return (
-      <Card className="max-w-md mx-auto p-8 text-center border-emerald-200 bg-white shadow-2xl rounded-3xl">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 mb-4 animate-bounce">
+      <Card data-ui="success-card" className="max-w-md mx-auto p-8 text-center border border-emerald-200 bg-white rounded-3xl">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 mb-4">
           <Sparkles className="h-8 w-8" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900">Attendance Submitted!</h2>
+        <h2 className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">Attendance Submitted!</h2>
         <p className="mt-2 text-sm text-slate-600">
           Official attendance for <strong>{subjectCode} ({sectionName})</strong> has been persisted transactionally.
         </p>
 
         <div className="my-6 grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
           <div>
-            <div className="text-2xl font-bold text-emerald-600">{presentCount}</div>
-            <div className="text-xs text-slate-500 font-semibold uppercase mt-0.5">Present</div>
+            <div className="font-chillax text-2xl font-bold text-emerald-600 tabular-nums">{presentCount}</div>
+            <div className="text-xs text-slate-500 font-semibold mt-0.5">Present</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-rose-600">{absentCount}</div>
-            <div className="text-xs text-slate-500 font-semibold uppercase mt-0.5">Absent</div>
+            <div className="font-chillax text-2xl font-bold text-rose-600 tabular-nums">{absentCount}</div>
+            <div className="text-xs text-slate-500 font-semibold mt-0.5">Absent</div>
           </div>
         </div>
 
@@ -247,12 +274,12 @@ export function SwipeAttendanceSession({
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full space-y-5">
+    <div data-ui="swipe-session" className="max-w-3xl mx-auto w-full space-y-5">
       {/* Session Metadata Header */}
-      <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+      <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200">
         <div>
-          <h2 className="text-base font-bold text-slate-900 leading-tight">
-            {subjectCode} — {sectionName}
+          <h2 className="font-chillax text-base font-bold text-slate-900 leading-tight tracking-tight">
+            {subjectCode}: {sectionName}
           </h2>
           <p className="text-xs text-slate-500 mt-0.5 flex items-center">
             <Calendar className="h-3 w-3 mr-1" /> {sessionDate} • Period {period}
@@ -263,8 +290,8 @@ export function SwipeAttendanceSession({
         <div className="flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200">
           <button
             onClick={() => setViewMode("swipe")}
-            className={`p-1.5 rounded-lg text-xs font-semibold transition-all ${
-              viewMode === "swipe" ? "bg-white text-blue-600 shadow-xs" : "text-slate-500"
+            className={`p-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              viewMode === "swipe" ? "bg-white text-blue-600" : "text-slate-500"
             }`}
             title="Card Swipe View"
           >
@@ -272,8 +299,8 @@ export function SwipeAttendanceSession({
           </button>
           <button
             onClick={() => setViewMode("roster")}
-            className={`p-1.5 rounded-lg text-xs font-semibold transition-all ${
-              viewMode === "roster" ? "bg-white text-blue-600 shadow-xs" : "text-slate-500"
+            className={`p-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              viewMode === "roster" ? "bg-white text-blue-600" : "text-slate-500"
             }`}
             title="Roster Checklist View"
           >
@@ -283,21 +310,21 @@ export function SwipeAttendanceSession({
       </div>
 
       {/* Progress & Live Stats Bar */}
-      <div className="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-xs space-y-2">
+      <div className="rounded-2xl bg-white p-4 border border-slate-200 space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="text-slate-600">
+          <span className="text-slate-600 tabular-nums">
             {markedCount} of {students.length} Marked ({Math.round(progressPercent)}%)
           </span>
           <div className="flex items-center space-x-2.5">
-            <span className="text-emerald-600 font-bold">{presentCount} Present</span>
+            <span className="text-emerald-600 font-bold tabular-nums">{presentCount} Present</span>
             <span className="text-slate-300">•</span>
-            <span className="text-rose-600 font-bold">{absentCount} Absent</span>
+            <span className="text-rose-600 font-bold tabular-nums">{absentCount} Absent</span>
           </div>
         </div>
 
         <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
           <div
-            className="h-full bg-blue-600 transition-all duration-300"
+            className="h-full bg-blue-600 transition-[width] duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -312,11 +339,12 @@ export function SwipeAttendanceSession({
 
             {/* LEFT BACKGROUND CARD (Absent Representation - Rotated & Tilted) */}
             <div
-              className="absolute left-1/2 -translate-x-[72%] sm:-translate-x-[68%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-linear-to-br from-rose-100/90 to-rose-200/70 border-2 border-rose-200/60 shadow-xl shadow-rose-900/5 rotate-[-10deg] scale-90 -z-10 transition-all pointer-events-none p-3.5 flex flex-col justify-between"
+              data-ui="ghost-card"
+              className="absolute left-1/2 -translate-x-[72%] sm:-translate-x-[68%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-rose-100 border-2 border-rose-200/60 rotate-[-10deg] scale-90 -z-10 pointer-events-none p-3.5 flex flex-col justify-between"
             >
               {/* Ghost Photo Placeholder */}
               <div className="w-full aspect-[4/3] rounded-[22px] bg-rose-200/50 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-rose-500 text-white shadow-xl shadow-rose-500/40 ring-4 ring-rose-200/70 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-rose-500 text-white ring-4 ring-rose-200/70 flex items-center justify-center">
                   <X className="h-8 w-8 stroke-[3]" />
                 </div>
               </div>
@@ -330,11 +358,12 @@ export function SwipeAttendanceSession({
 
             {/* RIGHT BACKGROUND CARD (Present Representation - Rotated & Tilted) */}
             <div
-              className="absolute left-1/2 -translate-x-[28%] sm:-translate-x-[32%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-linear-to-bl from-emerald-100/90 to-emerald-200/70 border-2 border-emerald-200/60 shadow-xl shadow-emerald-900/5 rotate-[10deg] scale-90 -z-10 transition-all pointer-events-none p-3.5 flex flex-col justify-between"
+              data-ui="ghost-card"
+              className="absolute left-1/2 -translate-x-[28%] sm:-translate-x-[32%] top-3 w-[280px] sm:w-[320px] aspect-[3/4] rounded-[32px] bg-emerald-100 border-2 border-emerald-200/60 rotate-[10deg] scale-90 -z-10 pointer-events-none p-3.5 flex flex-col justify-between"
             >
               {/* Ghost Photo Placeholder */}
               <div className="w-full aspect-[4/3] rounded-[22px] bg-emerald-200/50 flex items-center justify-center">
-                <div className="h-16 w-16 rounded-full bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 ring-4 ring-emerald-200/70 flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-emerald-500 text-white ring-4 ring-emerald-200/70 flex items-center justify-center">
                   <Check className="h-8 w-8 stroke-[3]" />
                 </div>
               </div>
@@ -350,7 +379,7 @@ export function SwipeAttendanceSession({
             <div className="hidden md:flex flex-col items-center absolute left-2 lg:left-6 z-20">
               <button
                 onClick={() => markDecision(currentStudent.id, "absent")}
-                className="h-12 w-12 rounded-full bg-rose-50 border border-rose-200/80 text-rose-500 hover:bg-rose-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center shadow-md shadow-rose-500/10 cursor-pointer"
+                className="h-12 w-12 rounded-full bg-rose-50 border border-rose-200/80 text-rose-500 hover:bg-rose-100 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer"
                 title="Mark Absent (Arrow Left)"
               >
                 <ArrowLeft className="h-5 w-5 stroke-[2.5]" />
@@ -367,6 +396,7 @@ export function SwipeAttendanceSession({
 
             {/* ACTIVE STUDENT CARD (Center foreground) */}
             <div
+              data-ui="active-card"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
@@ -374,7 +404,7 @@ export function SwipeAttendanceSession({
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
-              className="relative z-20 w-full max-w-[320px] sm:max-w-[350px] rounded-[32px] bg-white p-3.5 sm:p-4 shadow-[0_20px_50px_rgba(15,23,42,0.12)] border border-slate-100 select-none cursor-grab active:cursor-grabbing transition-transform duration-100 ease-out"
+              className="relative z-20 w-full max-w-[320px] sm:max-w-[350px] rounded-[32px] bg-white p-3.5 sm:p-4 border border-slate-200 select-none cursor-grab active:cursor-grabbing transition-transform duration-100 ease-out"
               style={{
                 transform: `translateX(${dragOffset}px) rotate(${cardRotation}deg)`,
                 opacity: cardOpacity,
@@ -382,18 +412,18 @@ export function SwipeAttendanceSession({
             >
               {/* Visual stamp indicators on drag */}
               {dragOffset > 35 && (
-                <div className="absolute top-6 left-6 z-30 flex items-center rounded-2xl bg-emerald-500 px-3.5 py-1.5 text-xs font-extrabold text-white shadow-lg animate-in fade-in-50">
+                <div className="absolute top-6 left-6 z-30 flex items-center rounded-2xl bg-emerald-500 px-3.5 py-1.5 text-xs font-extrabold text-white animate-in fade-in-50">
                   <Check className="h-4 w-4 mr-1 stroke-[3]" /> PRESENT
                 </div>
               )}
               {dragOffset < -35 && (
-                <div className="absolute top-6 right-6 z-30 flex items-center rounded-2xl bg-rose-500 px-3.5 py-1.5 text-xs font-extrabold text-white shadow-lg animate-in fade-in-50">
+                <div className="absolute top-6 right-6 z-30 flex items-center rounded-2xl bg-rose-500 px-3.5 py-1.5 text-xs font-extrabold text-white animate-in fade-in-50">
                   ABSENT <X className="h-4 w-4 ml-1 stroke-[3]" />
                 </div>
               )}
 
               {/* Photo Viewport (Empty placeholder ready for database retrieval) */}
-              <div className="relative w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-linear-to-b from-slate-100 to-slate-200/90 border border-slate-200/60 flex flex-col items-center justify-center text-slate-400">
+              <div className="relative w-full aspect-[4/3] rounded-[24px] overflow-hidden bg-slate-100 border border-slate-200/60 flex flex-col items-center justify-center text-slate-400">
                 {currentStudent.photoUrl ? (
                   <img
                     src={currentStudent.photoUrl}
@@ -402,24 +432,24 @@ export function SwipeAttendanceSession({
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center">
-                    <div className="h-20 w-20 rounded-full bg-slate-200/80 border border-white/60 flex items-center justify-center text-slate-400 shadow-inner">
+                    <div className="h-20 w-20 rounded-full bg-slate-200/80 border border-white/60 flex items-center justify-center text-slate-400">
                       <User className="h-10 w-10 text-slate-400" />
                     </div>
                   </div>
                 )}
 
                 {/* Floating Index Counter Badge (Top Right) */}
-                <div className="absolute top-3 right-3 rounded-full bg-white/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-slate-700 shadow-xs border border-white/60">
+                <div className="absolute top-3 right-3 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-slate-700 border border-slate-200">
                   {currentIndex + 1}/{students.length}
                 </div>
               </div>
 
               {/* Student Identity Information */}
               <div className="pt-4 pb-2 text-center">
-                <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                <h3 className="font-chillax text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
                   {currentStudent.name}
                 </h3>
-                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5 font-mono">
+                <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5 tabular-nums">
                   {currentStudent.srn}
                 </p>
                 <p className="text-xs text-slate-400 mt-1 font-medium">
@@ -431,7 +461,7 @@ export function SwipeAttendanceSession({
                   <span className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-blue-600 border border-blue-100/80">
                     {currentStudent.semester ? `${currentStudent.semester}th Sem` : "5th Sem"}
                   </span>
-                  <span className="rounded-full bg-purple-50 px-3 py-1 text-[11px] font-semibold text-purple-600 border border-purple-100/80">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 border border-slate-200">
                     {currentStudent.section || sectionName}
                   </span>
                   <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-600 border border-emerald-100/80">
@@ -445,7 +475,7 @@ export function SwipeAttendanceSession({
             <div className="hidden md:flex flex-col items-center absolute right-2 lg:right-6 z-20">
               <button
                 onClick={() => markDecision(currentStudent.id, "present")}
-                className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-95 transition-all flex items-center justify-center shadow-md shadow-emerald-500/10 cursor-pointer"
+                className="h-12 w-12 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-600 hover:bg-emerald-100 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center cursor-pointer"
                 title="Mark Present (Arrow Right)"
               >
                 <ArrowRight className="h-5 w-5 stroke-[2.5]" />
@@ -468,9 +498,9 @@ export function SwipeAttendanceSession({
               return (
                 <div
                   key={dotIdx}
-                  className={`rounded-full transition-all duration-300 ${
+                  className={`rounded-full transition-colors duration-200 ${
                     isActive
-                      ? "w-2.5 h-2.5 bg-blue-600 shadow-xs"
+                      ? "w-2.5 h-2.5 bg-blue-600"
                       : "w-1.5 h-1.5 bg-blue-200/80"
                   }`}
                 />
@@ -483,7 +513,7 @@ export function SwipeAttendanceSession({
             <Button
               variant="destructive"
               size="lg"
-              className="py-3.5 rounded-2xl text-sm font-bold shadow-md shadow-rose-600/15"
+              className="py-3.5 rounded-2xl text-sm font-bold"
               onClick={() => markDecision(currentStudent.id, "absent")}
             >
               <X className="h-4 w-4 mr-1 stroke-[3]" /> Absent
@@ -501,7 +531,7 @@ export function SwipeAttendanceSession({
             <Button
               variant="success"
               size="lg"
-              className="py-3.5 rounded-2xl text-sm font-bold shadow-md shadow-emerald-600/15"
+              className="py-3.5 rounded-2xl text-sm font-bold"
               onClick={() => markDecision(currentStudent.id, "present")}
             >
               <Check className="h-4 w-4 mr-1 stroke-[3]" /> Present
@@ -512,10 +542,10 @@ export function SwipeAttendanceSession({
 
       {/* QUICK ROSTER MODE */}
       {viewMode === "roster" && (
-        <Card className="border-slate-200 shadow-sm rounded-2xl">
-          <CardHeader className="py-3 px-4 border-b border-slate-100">
+        <Card data-ui="roster-card" className="border border-slate-200 bg-white rounded-2xl">
+          <CardHeader data-ui="card-header" className="py-3 px-4 border-b border-slate-100">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Roster View</CardTitle>
+              <CardTitle className="font-chillax text-sm font-semibold tracking-tight">Roster View</CardTitle>
               <button
                 onClick={handleMarkAllRemainingPresent}
                 className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
@@ -524,7 +554,7 @@ export function SwipeAttendanceSession({
               </button>
             </div>
           </CardHeader>
-          <CardContent className="p-0 max-h-[380px] overflow-y-auto divide-y divide-slate-100">
+          <CardContent data-ui="card-content" className="p-0 max-h-[380px] overflow-y-auto divide-y divide-slate-100">
             {students.map((s) => {
               const status = decisions[s.id];
               return (
@@ -533,37 +563,37 @@ export function SwipeAttendanceSession({
                   className="flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="text-xs font-mono text-slate-400 w-5">
+                    <span className="text-xs font-semibold tabular-nums text-slate-400 w-5">
                       {s.rollNumber}
                     </span>
                     <div>
                       <h4 className="text-sm font-bold text-slate-900 leading-tight">
                         {s.name}
                       </h4>
-                      <span className="text-xs font-mono text-slate-500">{s.srn}</span>
+                      <span className="text-xs tabular-nums text-slate-500">{s.srn}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-1.5">
                     <button
                       onClick={() => markDecision(s.id, "absent")}
-                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all ${
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-colors ${
                         status === "absent"
-                          ? "bg-rose-600 text-white shadow-xs"
+                          ? "bg-rose-600 text-white"
                           : "border border-slate-200 bg-white text-slate-600 hover:bg-rose-50"
                       }`}
                     >
-                      A
+                      Absent
                     </button>
                     <button
                       onClick={() => markDecision(s.id, "present")}
-                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-all ${
+                      className={`h-9 px-3 rounded-xl text-xs font-bold transition-colors ${
                         status === "present"
-                          ? "bg-emerald-600 text-white shadow-xs"
+                          ? "bg-emerald-600 text-white"
                           : "border border-slate-200 bg-white text-slate-600 hover:bg-emerald-50"
                       }`}
                     >
-                      P
+                      Present
                     </button>
                   </div>
                 </div>
@@ -573,46 +603,63 @@ export function SwipeAttendanceSession({
         </Card>
       )}
 
-      {/* Review & Final Submit Trigger */}
-      <div className="pt-2 max-w-sm mx-auto">
-        <Button
-          className="w-full py-4 text-base rounded-2xl shadow-lg shadow-blue-600/20"
-          disabled={!isAllMarked}
-          onClick={() => setIsReviewOpen(true)}
-        >
+      {/* FINISH & REVIEW BAR */}
+      <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-200">
+        <div className="text-xs text-slate-500 font-medium">
           {isAllMarked ? (
-            <>
-              Review & Submit Attendance
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
+            <span className="text-emerald-600 font-bold flex items-center">
+              <CheckCircle2 className="h-4 w-4 mr-1" /> All {students.length} students reviewed
+            </span>
           ) : (
-            `Mark ${students.length - markedCount} Remaining Students to Submit`
+            <span>{students.length - markedCount} students remaining</span>
           )}
-        </Button>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {!isAllMarked && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs rounded-xl"
+              onClick={handleMarkAllRemainingPresent}
+            >
+              Mark Rest Present
+            </Button>
+          )}
+
+          <Button
+            variant="default"
+            size="sm"
+            className="rounded-xl px-5"
+            onClick={() => setIsReviewOpen(true)}
+          >
+            Review & Submit
+          </Button>
+        </div>
       </div>
 
-      {/* Pre-Submission Review Modal */}
+      {/* REVIEW & SUBMIT DIALOG */}
       <Dialog
         isOpen={isReviewOpen}
         onClose={() => setIsReviewOpen(false)}
-        title="Confirm Attendance Submission"
-        description={`Review final counts for ${subjectCode} (${sectionName})`}
+        title="Review Attendance Submission"
+        description={`${subjectCode}: ${sectionName} • ${sessionDate} (Period ${period})`}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-center">
             <div>
-              <div className="text-3xl font-extrabold text-emerald-600">{presentCount}</div>
-              <div className="text-xs font-bold text-slate-500 uppercase mt-0.5">Present</div>
+              <div className="font-chillax text-3xl font-extrabold text-emerald-600 tabular-nums">{presentCount}</div>
+              <div className="text-xs font-bold text-slate-600 mt-0.5">Present</div>
             </div>
             <div>
-              <div className="text-3xl font-extrabold text-rose-600">{absentCount}</div>
-              <div className="text-xs font-bold text-slate-500 uppercase mt-0.5">Absent</div>
+              <div className="font-chillax text-3xl font-extrabold text-rose-600 tabular-nums">{absentCount}</div>
+              <div className="text-xs font-bold text-slate-600 mt-0.5">Absent</div>
             </div>
           </div>
 
           {absentCount > 0 && (
             <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-3.5">
-              <span className="text-xs font-bold text-rose-800 uppercase tracking-wide">
+              <span className="text-xs font-bold text-rose-800">
                 Absentees List ({absentCount})
               </span>
               <ul className="mt-2 text-xs text-rose-700 space-y-1">

@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { Download, FileText, FileSpreadsheet, ShieldCheck } from "lucide-react";
+import { FileText, FileSpreadsheet, ShieldCheck } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { downloadCsv, downloadPdfReport } from "@/lib/export";
-import { MOCK_STUDENT_USER, MOCK_INSTITUTION, MOCK_SUBJECTS } from "@/lib/data/mock-store";
+import { MOCK_STUDENT_USER, MOCK_INSTITUTION } from "@/lib/data/mock-store";
 
 export default function StudentReportsPage() {
   const studentRecords = [
@@ -50,12 +50,12 @@ export default function StudentReportsPage() {
       title="Personal Attendance Transcript"
       subtitle="Download official date-stamped records of your academic attendance"
     >
-      <div className="max-w-3xl space-y-6">
-        <Card className="border-slate-200">
+      <div className="max-w-3xl space-y-6" data-ui="student-reports">
+        <Card className="border-slate-200 bg-white" data-ui="data-table">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Official Academic Record</CardTitle>
+                <CardTitle className="font-chillax tracking-tight">Official Academic Record</CardTitle>
                 <CardDescription>
                   Verified attendance ledger for student {MOCK_STUDENT_USER.fullName} ({MOCK_STUDENT_USER.identifier})
                 </CardDescription>
@@ -68,26 +68,26 @@ export default function StudentReportsPage() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            <div className="rounded-xl border border-slate-200 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs uppercase">
+            <div className="rounded-xl border border-slate-200 overflow-x-auto" data-ui="table-wrapper">
+              <table className="w-full text-left text-sm" data-ui="table">
+                <thead data-ui="table-head" className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs font-semibold">
                   <tr>
-                    <th className="p-3 font-semibold">Course</th>
-                    <th className="p-3 font-semibold">Held</th>
-                    <th className="p-3 font-semibold">Attended</th>
-                    <th className="p-3 font-semibold text-right">Percentage</th>
+                    <th className="p-3">Course</th>
+                    <th className="p-3">Held</th>
+                    <th className="p-3">Attended</th>
+                    <th className="p-3 text-right">Percentage</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody data-ui="table-body" className="divide-y divide-slate-100 bg-white">
                   {studentRecords.map((rec) => (
-                    <tr key={rec.code}>
+                    <tr key={rec.code} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3">
                         <span className="font-bold text-slate-900">{rec.code}</span>{" "}
                         <span className="text-slate-500">({rec.name})</span>
                       </td>
-                      <td className="p-3 text-slate-600">{rec.held}</td>
-                      <td className="p-3 text-slate-600">{rec.attended}</td>
-                      <td className="p-3 text-right font-semibold text-slate-900">
+                      <td className="p-3 tabular-nums text-slate-600">{rec.held}</td>
+                      <td className="p-3 tabular-nums text-slate-600">{rec.attended}</td>
+                      <td className="p-3 text-right font-semibold text-slate-900 tabular-nums">
                         {rec.pct}
                       </td>
                     </tr>

@@ -18,7 +18,7 @@ export default function NewAttendanceSessionPage() {
     id: item.profile.id,
     name: item.profile.fullName,
     srn: item.profile.identifier || "SRN-UNKNOWN",
-    rollNumber: item.enrollment.rollNumber || "01",
+    rollNumber: item.enrollment.rollNumber || "1",
     department: "Computer Science & Engineering",
     semester: 5,
     section: MOCK_SECTION_A.name,

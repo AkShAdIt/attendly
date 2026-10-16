@@ -3,12 +3,9 @@
 import React from "react";
 import Link from "next/link";
 import {
-  CalendarCheck2,
   Users,
   CheckCircle2,
-  Clock,
   ArrowRight,
-  BookOpen,
   PlusCircle,
   FileText,
 } from "lucide-react";
@@ -47,11 +44,11 @@ export default function TeacherDashboardPage() {
         </Link>
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-8" data-ui="teacher-overview">
         {/* Today's Assigned Classes Cards */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="font-chillax text-lg font-bold text-slate-900 tracking-tight">
               Today's Assigned Classes
             </h2>
             <span className="text-xs font-semibold text-slate-500">
@@ -59,22 +56,23 @@ export default function TeacherDashboardPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-ui="classes-grid">
             {teacherAssignments.map((assignment, idx) => (
               <Card
                 key={assignment.id}
-                className="hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between"
+                className="border-slate-200 bg-white hover:border-blue-600 transition-colors flex flex-col justify-between"
+                data-ui="class-card"
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <Badge variant="default" className="font-mono text-xs">
+                    <Badge variant="default" className="tabular-nums font-bold text-xs">
                       {assignment.subjectCode}
                     </Badge>
-                    <span className="text-xs font-semibold text-slate-400">
+                    <span className="text-xs font-semibold text-slate-500">
                       Period {idx + 1} • 09:00 AM
                     </span>
                   </div>
-                  <CardTitle className="text-xl mt-2">
+                  <CardTitle className="font-chillax text-xl mt-2 tracking-tight">
                     {assignment.subjectName}
                   </CardTitle>
                   <CardDescription>
@@ -83,8 +81,8 @@ export default function TeacherDashboardPage() {
                 </CardHeader>
 
                 <CardContent className="pt-2">
-                  <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                    <div className="flex items-center text-xs text-slate-500 space-x-1">
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center text-xs text-slate-600 space-x-1 font-medium">
                       <Users className="h-4 w-4 text-slate-400" />
                       <span>20 Students</span>
                     </div>
@@ -104,10 +102,10 @@ export default function TeacherDashboardPage() {
         </div>
 
         {/* Previously Submitted Sessions */}
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 bg-white" data-ui="data-table">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Recent Attendance Sessions</CardTitle>
+              <CardTitle className="font-chillax tracking-tight">Recent Attendance Sessions</CardTitle>
               <CardDescription>
                 Persisted session records with verified audit status.
               </CardDescription>
@@ -121,26 +119,26 @@ export default function TeacherDashboardPage() {
           </CardHeader>
 
           <CardContent>
-            <div className="rounded-xl border border-slate-200 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs uppercase tracking-wider">
+            <div className="rounded-xl border border-slate-200 overflow-x-auto" data-ui="table-wrapper">
+              <table className="w-full text-left text-sm" data-ui="table">
+                <thead data-ui="table-head" className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs font-semibold">
                   <tr>
-                    <th className="p-3.5 font-semibold">Date</th>
-                    <th className="p-3.5 font-semibold">Course & Section</th>
-                    <th className="p-3.5 font-semibold">Period</th>
-                    <th className="p-3.5 font-semibold">Present / Total</th>
-                    <th className="p-3.5 font-semibold">Attendance Rate</th>
-                    <th className="p-3.5 font-semibold text-right">Status</th>
+                    <th className="p-3.5">Date</th>
+                    <th className="p-3.5">Course & Section</th>
+                    <th className="p-3.5">Period</th>
+                    <th className="p-3.5">Present / Total</th>
+                    <th className="p-3.5">Attendance Rate</th>
+                    <th className="p-3.5 text-right">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody data-ui="table-body" className="divide-y divide-slate-100 bg-white">
                   {MOCK_SESSIONS.map((sess) => {
                     const rate = sess.totalStudents
                       ? ((sess.totalPresent || 0) / sess.totalStudents) * 100
                       : 0;
                     return (
-                      <tr key={sess.id} className="hover:bg-slate-50">
-                        <td className="p-3.5 font-medium text-slate-800">
+                      <tr key={sess.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-3.5 font-medium text-slate-800 tabular-nums">
                           {sess.sessionDate}
                         </td>
                         <td className="p-3.5">
@@ -150,11 +148,11 @@ export default function TeacherDashboardPage() {
                           <span className="text-slate-500">({sess.sectionName})</span>
                         </td>
                         <td className="p-3.5 text-slate-600">Period {sess.period}</td>
-                        <td className="p-3.5 font-semibold text-slate-700">
+                        <td className="p-3.5 font-semibold text-slate-700 tabular-nums">
                           {sess.totalPresent} / {sess.totalStudents}
                         </td>
                         <td className="p-3.5">
-                          <span className="font-bold text-emerald-600">
+                          <span className="font-bold text-emerald-600 tabular-nums">
                             {rate.toFixed(1)}%
                           </span>
                         </td>

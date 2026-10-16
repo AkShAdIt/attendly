@@ -11,12 +11,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import {
-  BarChart3,
-  Download,
   FileSpreadsheet,
   FileText,
   AlertTriangle,
-  Filter,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -26,7 +23,6 @@ import { downloadCsv, downloadPdfReport } from "@/lib/export";
 import {
   MOCK_ADMIN_USER,
   MOCK_INSTITUTION,
-  MOCK_STUDENTS,
 } from "@/lib/data/mock-store";
 
 export default function AdminAnalyticsPage() {
@@ -91,13 +87,13 @@ export default function AdminAnalyticsPage() {
         </div>
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-8" data-ui="admin-analytics">
         {/* Subject Attendance Distribution Bar Chart */}
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 bg-white" data-ui="chart-card">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Subject Attendance Performance</CardTitle>
+                <CardTitle className="font-chillax text-base tracking-tight">Subject Attendance Performance</CardTitle>
                 <CardDescription>
                   Average percentage of classes attended across 5th Semester courses.
                 </CardDescription>
@@ -107,7 +103,7 @@ export default function AdminAnalyticsPage() {
           </CardHeader>
 
           <CardContent>
-            <div className="h-64 w-full">
+            <div className="h-64 w-full" data-ui="chart-container">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={subjectChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -117,11 +113,11 @@ export default function AdminAnalyticsPage() {
                     contentStyle={{
                       backgroundColor: "#ffffff",
                       borderColor: "#e2e8f0",
-                      borderRadius: "0.75rem",
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      borderRadius: "0.5rem",
+                      boxShadow: "none",
                     }}
                   />
-                  <Bar dataKey="attendance" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="attendance" fill="#2563eb" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -129,14 +125,14 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         {/* At Risk Cohort Table */}
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 bg-white" data-ui="data-table">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle>Students Below Required Threshold (&lt; {threshold}%)</CardTitle>
+                <CardTitle className="font-chillax tracking-tight">Students Below Required Threshold (&lt; {threshold}%)</CardTitle>
                 <CardDescription>
                   Cohorts needing immediate counseling or mandatory recovery sessions.
                 </CardDescription>
@@ -158,22 +154,22 @@ export default function AdminAnalyticsPage() {
           </CardHeader>
 
           <CardContent>
-            <div className="rounded-xl border border-slate-200 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs uppercase tracking-wider">
+            <div className="rounded-xl border border-slate-200 overflow-x-auto" data-ui="table-wrapper">
+              <table className="w-full text-left text-sm" data-ui="table">
+                <thead data-ui="table-head" className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs font-semibold">
                   <tr>
-                    <th className="p-3.5 font-semibold">Student Name</th>
-                    <th className="p-3.5 font-semibold">SRN</th>
-                    <th className="p-3.5 font-semibold">Section</th>
-                    <th className="p-3.5 font-semibold">Classes Missed</th>
-                    <th className="p-3.5 font-semibold text-right">Attendance Rate</th>
+                    <th className="p-3.5">Student Name</th>
+                    <th className="p-3.5">SRN</th>
+                    <th className="p-3.5">Section</th>
+                    <th className="p-3.5">Classes Missed</th>
+                    <th className="p-3.5 text-right">Attendance Rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody data-ui="table-body" className="divide-y divide-slate-100 bg-white">
                   {atRiskStudents.map((s) => (
-                    <tr key={s.srn} className="hover:bg-slate-50">
+                    <tr key={s.srn} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3.5 font-bold text-slate-900">{s.name}</td>
-                      <td className="p-3.5 font-mono text-slate-600">{s.srn}</td>
+                      <td className="p-3.5 tabular-nums font-semibold text-slate-700">{s.srn}</td>
                       <td className="p-3.5 text-slate-600">{s.section}</td>
                       <td className="p-3.5 font-semibold text-rose-600">
                         {s.missed} sessions

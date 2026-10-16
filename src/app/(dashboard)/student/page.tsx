@@ -9,8 +9,6 @@ import {
   XCircle,
   AlertTriangle,
   Download,
-  BookOpen,
-  ArrowRight,
 } from "lucide-react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -21,7 +19,6 @@ import {
   MOCK_STUDENT_USER,
   MOCK_INSTITUTION,
   MOCK_SUBJECTS,
-  MOCK_SESSIONS,
 } from "@/lib/data/mock-store";
 import { calculateAttendancePercentage } from "@/lib/attendance";
 
@@ -81,7 +78,7 @@ export default function StudentDashboardPage() {
         </Link>
       }
     >
-      <div className="space-y-8">
+      <div className="space-y-8" data-ui="student-overview">
         {/* At Risk Warning Banner */}
         {isOverallAtRisk && (
           <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
@@ -95,16 +92,16 @@ export default function StudentDashboardPage() {
         )}
 
         {/* Aggregate Metric Highlights */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-slate-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-ui="metrics-grid">
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Overall Attendance
               </span>
               <GraduationCap className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold text-slate-900">
+              <div className="font-chillax text-3xl font-extrabold text-slate-900 tracking-tight">
                 {overallPercentage !== null ? `${overallPercentage.toFixed(1)}%` : "N/A"}
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -113,15 +110,15 @@ export default function StudentDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Classes Attended
               </span>
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold text-emerald-600">
+              <div className="font-chillax text-3xl font-extrabold text-emerald-600 tracking-tight">
                 {totalPresentAll}
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -130,15 +127,15 @@ export default function StudentDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Classes Missed
               </span>
               <XCircle className="h-4 w-4 text-rose-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold text-rose-600">
+              <div className="font-chillax text-3xl font-extrabold text-rose-600 tracking-tight">
                 {totalAbsentAll}
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -147,15 +144,15 @@ export default function StudentDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200">
+          <Card className="border-slate-200 bg-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-500 uppercase">
+              <span className="text-xs font-semibold text-slate-600">
                 Total Sessions Held
               </span>
-              <CalendarCheck className="h-4 w-4 text-purple-600" />
+              <CalendarCheck className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-extrabold text-slate-900">
+              <div className="font-chillax text-3xl font-extrabold text-slate-900 tracking-tight">
                 {totalHeldAll}
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -165,13 +162,13 @@ export default function StudentDashboardPage() {
           </Card>
         </div>
 
-        {/* Subject-Wise Attendance Breakdown */}
+        {/* Course-Wise Attendance Breakdown */}
         <div>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">
+          <h2 className="font-chillax text-lg font-bold text-slate-900 mb-4 tracking-tight">
             Course-Wise Attendance Breakdown
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-ui="courses-grid">
             {subjectsData.map((item) => {
               const pct = calculateAttendancePercentage(item.present, item.totalHeld);
               const isLow = pct !== null && pct < 75;
@@ -179,13 +176,14 @@ export default function StudentDashboardPage() {
               return (
                 <Card
                   key={item.subject.id}
-                  className={`border transition-all ${
-                    isLow ? "border-rose-200 bg-rose-50/20" : "border-slate-200"
+                  className={`border bg-white transition-colors ${
+                    isLow ? "border-rose-300" : "border-slate-200"
                   }`}
+                  data-ui="subject-card"
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <Badge variant="default" className="font-mono text-xs">
+                      <Badge variant="default" className="tabular-nums font-bold text-xs">
                         {item.subject.code}
                       </Badge>
                       {pct !== null ? (
@@ -198,7 +196,7 @@ export default function StudentDashboardPage() {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-lg mt-2">
+                    <CardTitle className="font-chillax text-lg mt-2 tracking-tight">
                       {item.subject.name}
                     </CardTitle>
                     <CardDescription>
@@ -211,7 +209,7 @@ export default function StudentDashboardPage() {
                       <div className="space-y-3">
                         <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                           <div
-                            className={`h-full transition-all ${
+                            className={`h-full transition-[width] duration-300 ${
                               (pct || 0) >= 85
                                 ? "bg-emerald-600"
                                 : (pct || 0) >= 75
@@ -223,10 +221,10 @@ export default function StudentDashboardPage() {
                         </div>
 
                         <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
-                          <span className="text-emerald-700">
+                          <span className="text-emerald-700 font-semibold">
                             {item.present} Present
                           </span>
-                          <span className="text-rose-700">
+                          <span className="text-rose-700 font-semibold">
                             {item.absent} Absent
                           </span>
                           <span className="text-slate-500">
@@ -247,7 +245,7 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Projection Calculator */}
-        <div>
+        <div data-ui="calculator-section">
           <TargetCalculator
             presentCount={totalPresentAll}
             totalHeld={totalHeldAll}

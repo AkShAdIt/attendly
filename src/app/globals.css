@@ -2,47 +2,43 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --popover: #ffffff;
-    --popover-foreground: #0f172a;
-    --primary: #2563eb;
-    --primary-foreground: #ffffff;
-    --secondary: #f1f5f9;
-    --secondary-foreground: #1e293b;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-    --accent: #f8fafc;
-    --accent-foreground: #0f172a;
-    --border: #e2e8f0;
-    --input: #e2e8f0;
-    --ring: #2563eb;
-    --radius: 0.75rem;
+    --bg: #f8fafc;
+    --surface: #f1f5f9;
+    --surface-raised: #ffffff;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-ink: #ffffff;
+    --accent-hover: #1d4ed8;
 
-    /* Attendance semantic status colors */
-    --status-present: #16a34a;
-    --status-present-bg: #f0fdf4;
-    --status-present-border: #bbf7d0;
-    --status-absent: #dc2626;
-    --status-absent-bg: #fef2f2;
-    --status-absent-border: #fecaca;
-    --status-draft: #d97706;
-    --status-draft-bg: #fffbeb;
-    --status-draft-border: #fde68a;
+    /* Semantic attendance indicators */
+    --present: #16a34a;
+    --present-surface: #f0fdf4;
+    --present-border: #bbf7d0;
+    --absent: #e11d48;
+    --absent-surface: #fff1f2;
+    --absent-border: #fecdd3;
+    --warning: #d97706;
+    --warning-surface: #fffbeb;
+    --warning-border: #fde68a;
+
+    --radius-sm: 0.5rem;
+    --radius-md: 0.875rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
   }
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: 'Chillax', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Touch & swipe utility styling */
+/* Touch & swipe physics */
 .touch-card-container {
   touch-action: pan-y;
   user-select: none;
@@ -54,10 +50,10 @@ body {
   transition: transform 0.15s ease-out, opacity 0.15s ease-out;
 }
 
-/* Custom scrollbar for mobile lists */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
