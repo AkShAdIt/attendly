@@ -19,6 +19,7 @@ import {
   MOCK_TEACHER_ASSIGNMENTS,
   MOCK_SESSIONS,
 } from "@/lib/data/mock-store";
+import { TeacherAnalyticsVisuals } from "@/components/teacher/TeacherAnalyticsVisuals";
 
 export default function TeacherDashboardPage() {
   const teacherAssignments = MOCK_TEACHER_ASSIGNMENTS.filter(
@@ -100,6 +101,9 @@ export default function TeacherDashboardPage() {
             ))}
           </div>
         </div>
+
+        {/* Attendance Visualizations & Analytics */}
+        <TeacherAnalyticsVisuals />
 
         {/* Previously Submitted Sessions */}
         <Card className="border-slate-200 bg-white" data-ui="data-table">

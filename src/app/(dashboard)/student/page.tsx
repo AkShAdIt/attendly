@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TargetCalculator } from "@/components/student/TargetCalculator";
+import { StudentAnalyticsVisuals } from "@/components/student/StudentAnalyticsVisuals";
 import {
   MOCK_STUDENT_USER,
   MOCK_INSTITUTION,
@@ -161,6 +162,21 @@ export default function StudentDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Visual Analytics & Attendance Velocity */}
+        <StudentAnalyticsVisuals
+          subjects={subjectsData.map((s) => ({
+            code: s.subject.code,
+            name: s.subject.name,
+            present: s.present,
+            totalHeld: s.totalHeld,
+            pct: calculateAttendancePercentage(s.present, s.totalHeld),
+          }))}
+          overallPct={overallPercentage}
+          totalPresent={totalPresentAll}
+          totalAbsent={totalAbsentAll}
+          totalHeld={totalHeldAll}
+        />
 
         {/* Course-Wise Attendance Breakdown */}
         <div>
