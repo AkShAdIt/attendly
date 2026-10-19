@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCheck, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { InstallButton } from "@/components/ui/InstallPrompt";
 
 export interface NavbarProps {
   user?: {
@@ -32,6 +33,7 @@ export function Navbar({ user, onLogout }: NavbarProps) {
         </Link>
 
         <div className="flex items-center space-x-3">
+          <InstallButton />
           {user ? (
             <div className="flex items-center space-x-3">
               <Badge variant={roleBadges[user.role].variant}>

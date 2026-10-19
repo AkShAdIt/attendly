@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { SwipeDemo } from "@/components/landing/SwipeDemo";
+import { InstallButton } from "@/components/ui/InstallPrompt";
 
 export default function LandingPage() {
   return (
@@ -33,7 +34,7 @@ export default function LandingPage() {
                 Swipe cards for teachers, real-time credit calculations for students, and centralized roster control for college administrators.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3.5">
+              <div className="mt-8 flex flex-wrap items-center gap-3.5">
                 <Link
                   href="/login"
                   className="inline-flex items-center justify-center rounded-2xl bg-[#0f172a] px-6 py-3.5 text-base font-semibold text-white hover:bg-slate-800 transition-colors"
@@ -46,6 +47,7 @@ export default function LandingPage() {
                 >
                   Open Teacher Portal
                 </Link>
+                <InstallButton className="px-5 py-3 text-sm rounded-2xl font-semibold" />
               </div>
             </div>
 
