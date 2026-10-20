@@ -87,18 +87,20 @@ export default function AdminDashboardPage() {
         </Button>
       }
     >
-      <div className="space-y-8" data-ui="admin-overview">
+      <div className="space-y-6 sm:space-y-8" data-ui="admin-overview">
         {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-ui="metrics-grid">
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Total Enrolled
               </span>
-              <GraduationCap className="h-4 w-4 text-blue-600" />
+              <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <GraduationCap className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
                 {studentsList.length} Students
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -107,15 +109,17 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Active Faculty
               </span>
-              <Users className="h-4 w-4 text-emerald-600" />
+              <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <Users className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
                 2 Teachers
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -124,15 +128,17 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Subjects & Courses
               </span>
-              <BookOpen className="h-4 w-4 text-blue-600" />
+              <div className="h-8 w-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                <BookOpen className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
                 {MOCK_SUBJECTS.length} Subjects
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -141,18 +147,20 @@ export default function AdminDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Attendance Recorded
               </span>
-              <CalendarCheck2 className="h-4 w-4 text-amber-600" />
+              <div className="h-8 w-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                <CalendarCheck2 className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-2xl font-bold text-slate-900 tracking-tight">
+              <div className="text-2xl font-bold tracking-tight text-slate-900 tabular-nums">
                 {MOCK_SESSIONS.length} Sessions
               </div>
-              <p className="text-xs text-emerald-600 font-semibold mt-1">
+              <p className="text-xs text-emerald-700 font-semibold mt-1">
                 90.0% Institutional Avg
               </p>
             </CardContent>
@@ -167,60 +175,60 @@ export default function AdminDashboardPage() {
         )}
 
         {/* Student Directory Table */}
-        <Card className="border-slate-200 bg-white" data-ui="data-table">
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Card className="border-slate-200/80 bg-white shadow-xs" data-ui="data-table">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
-              <CardTitle className="font-chillax tracking-tight">Enrolled Student Directory</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Enrolled Student Directory</CardTitle>
               <CardDescription>
                 Search, verify, and monitor student institutional profiles and section enrollments.
               </CardDescription>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <Input
                   placeholder="Search by name or SRN..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 h-10"
+                  className="pl-9 h-9 text-xs"
                 />
               </div>
             </div>
           </CardHeader>
 
-          <CardContent>
-            <div className="rounded-xl border border-slate-200 overflow-x-auto" data-ui="table-wrapper">
+          <CardContent className="pt-4">
+            <div className="rounded-xl border border-slate-200/80 overflow-x-auto shadow-2xs" data-ui="table-wrapper">
               <table className="w-full text-left text-sm" data-ui="table">
-                <thead data-ui="table-head" className="bg-slate-50 text-slate-700 border-b border-slate-200 text-xs font-semibold">
+                <thead data-ui="table-head" className="bg-slate-50/80 text-slate-600 border-b border-slate-200 text-xs font-semibold">
                   <tr>
-                    <th className="p-3.5">Roll</th>
-                    <th className="p-3.5">Student Identifier</th>
-                    <th className="p-3.5">Full Name</th>
-                    <th className="p-3.5">Section</th>
-                    <th className="p-3.5">Email</th>
-                    <th className="p-3.5 text-right">Status</th>
+                    <th className="px-4 py-3 text-[11px] uppercase tracking-wider">Roll</th>
+                    <th className="px-4 py-3 text-[11px] uppercase tracking-wider">Identifier / SRN</th>
+                    <th className="px-4 py-3 text-[11px] uppercase tracking-wider">Full Name</th>
+                    <th className="px-4 py-3 text-[11px] uppercase tracking-wider">Section</th>
+                    <th className="px-4 py-3 text-[11px] uppercase tracking-wider">Email</th>
+                    <th className="px-4 py-3 text-[11px] uppercase tracking-wider text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody data-ui="table-body" className="divide-y divide-slate-100 bg-white">
                   {filteredStudents.slice(0, 15).map((item) => (
-                    <tr key={item.profile.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3.5 tabular-nums text-slate-500 font-medium">
+                    <tr key={item.profile.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-4 py-3 tabular-nums text-slate-500 font-mono text-xs">
                         {item.enrollment.rollNumber || "—"}
                       </td>
-                      <td className="p-3.5 tabular-nums font-bold text-slate-900">
+                      <td className="px-4 py-3 tabular-nums font-mono font-semibold text-slate-900 text-xs">
                         {item.profile.identifier}
                       </td>
-                      <td className="p-3.5 font-semibold text-slate-800">
+                      <td className="px-4 py-3 font-medium text-slate-800">
                         {item.profile.fullName}
                       </td>
-                      <td className="p-3.5 text-slate-600">
+                      <td className="px-4 py-3 text-slate-600 text-xs">
                         Section A (Sem 5)
                       </td>
-                      <td className="p-3.5 text-slate-500 text-xs">
+                      <td className="px-4 py-3 text-slate-500 text-xs font-mono">
                         {item.profile.email}
                       </td>
-                      <td className="p-3.5 text-right">
+                      <td className="px-4 py-3 text-right">
                         <Badge variant="present">Enrolled</Badge>
                       </td>
                     </tr>
@@ -231,7 +239,7 @@ export default function AdminDashboardPage() {
 
             <div className="flex items-center justify-between pt-4 text-xs text-slate-500">
               <span>Showing {Math.min(15, filteredStudents.length)} of {filteredStudents.length} students</span>
-              <span className="font-medium">Strict RLS Scope: Apex Institute of Technology</span>
+              <span className="font-medium text-slate-400">Apex Institute of Technology</span>
             </div>
           </CardContent>
         </Card>

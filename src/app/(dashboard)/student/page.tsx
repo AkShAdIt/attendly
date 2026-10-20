@@ -79,85 +79,93 @@ export default function StudentDashboardPage() {
         </Link>
       }
     >
-      <div className="space-y-8" data-ui="student-overview">
+      <div className="space-y-6 sm:space-y-8" data-ui="student-overview">
         {/* At Risk Warning Banner */}
         {isOverallAtRisk && (
-          <div className="flex items-center space-x-3 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
-            <div>
-              <span className="font-bold">Attendance Notice: </span>
-              Your overall attendance is currently at{" "}
-              <strong>{overallPercentage?.toFixed(1)}%</strong>, which is below the recommended 85% college requirement. Use the calculator below to plan your attendance recovery.
+          <div className="flex items-start sm:items-center space-x-3.5 p-4 rounded-2xl bg-amber-50/90 border border-amber-200/90 text-amber-950 text-xs sm:text-sm shadow-2xs">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+            <div className="leading-relaxed">
+              <span className="font-semibold text-amber-900">Attendance Advisory: </span>
+              Your cumulative attendance is at{" "}
+              <strong className="font-bold text-amber-950 tabular-nums">{overallPercentage?.toFixed(1)}%</strong>, below the recommended 85% college minimum. Use the projection calculator below to plan recovery classes.
             </div>
           </div>
         )}
 
         {/* Aggregate Metric Highlights */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-ui="metrics-grid">
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Overall Attendance
               </span>
-              <GraduationCap className="h-4 w-4 text-blue-600" />
+              <div className="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <GraduationCap className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-3xl font-extrabold text-slate-900 tracking-tight">
+              <div className="text-3xl font-extrabold text-slate-900 tracking-tight tabular-nums">
                 {overallPercentage !== null ? `${overallPercentage.toFixed(1)}%` : "N/A"}
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Requirement: 85% minimum
+                College requirement: 85%
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Classes Attended
               </span>
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-3xl font-extrabold text-emerald-600 tracking-tight">
+              <div className="text-3xl font-extrabold text-emerald-600 tracking-tight tabular-nums">
                 {totalPresentAll}
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Present sessions recorded
+                Present sessions logged
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Classes Missed
               </span>
-              <XCircle className="h-4 w-4 text-rose-600" />
+              <div className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                <XCircle className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-3xl font-extrabold text-rose-600 tracking-tight">
+              <div className="text-3xl font-extrabold text-rose-600 tracking-tight tabular-nums">
                 {totalAbsentAll}
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Absences recorded
+                Absences logged
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-slate-200/80 bg-white shadow-xs hover:border-slate-300 transition-colors">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-medium text-slate-500">
                 Total Sessions Held
               </span>
-              <CalendarCheck className="h-4 w-4 text-blue-600" />
+              <div className="h-8 w-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                <CalendarCheck className="h-4 w-4" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="font-chillax text-3xl font-extrabold text-slate-900 tracking-tight">
+              <div className="text-3xl font-extrabold text-slate-900 tracking-tight tabular-nums">
                 {totalHeldAll}
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Eligible submitted sessions
+                Completed class sessions
               </p>
             </CardContent>
           </Card>
@@ -180,7 +188,7 @@ export default function StudentDashboardPage() {
 
         {/* Course-Wise Attendance Breakdown */}
         <div>
-          <h2 className="font-chillax text-lg font-bold text-slate-900 mb-4 tracking-tight">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-4 tracking-tight">
             Course-Wise Attendance Breakdown
           </h2>
 
@@ -192,14 +200,14 @@ export default function StudentDashboardPage() {
               return (
                 <Card
                   key={item.subject.id}
-                  className={`border bg-white transition-colors ${
-                    isLow ? "border-rose-300" : "border-slate-200"
+                  className={`border bg-white shadow-xs transition-all ${
+                    isLow ? "border-rose-300 shadow-rose-900/5" : "border-slate-200/80 hover:border-slate-300"
                   }`}
                   data-ui="subject-card"
                 >
-                  <CardHeader>
+                  <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <Badge variant="default" className="tabular-nums font-bold text-xs">
+                      <Badge variant="outline" className="tabular-nums font-mono font-semibold text-xs bg-slate-50">
                         {item.subject.code}
                       </Badge>
                       {pct !== null ? (
@@ -212,7 +220,7 @@ export default function StudentDashboardPage() {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="font-chillax text-lg mt-2 tracking-tight">
+                    <CardTitle className="text-base sm:text-lg mt-2 tracking-tight">
                       {item.subject.name}
                     </CardTitle>
                     <CardDescription>
@@ -222,7 +230,7 @@ export default function StudentDashboardPage() {
 
                   <CardContent>
                     {item.totalHeld > 0 ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
                           <div
                             className={`h-full transition-[width] duration-300 ${
@@ -237,14 +245,14 @@ export default function StudentDashboardPage() {
                         </div>
 
                         <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
-                          <span className="text-emerald-700 font-semibold">
+                          <span className="text-emerald-700 font-semibold tabular-nums">
                             {item.present} Present
                           </span>
-                          <span className="text-rose-700 font-semibold">
+                          <span className="text-rose-700 font-semibold tabular-nums">
                             {item.absent} Absent
                           </span>
-                          <span className="text-slate-500">
-                            {item.totalHeld} Total Classes
+                          <span className="text-slate-400 tabular-nums">
+                            {item.totalHeld} Total
                           </span>
                         </div>
                       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import {
   AreaChart,
   Area,
@@ -54,6 +54,8 @@ const weeklyTrajectoryData = [
   { week: "Wk 6", rate: 86.8, present: 17, total: 20 }, // recovering
 ];
 
+const emptySubscribe = () => () => {};
+
 export function StudentAnalyticsVisuals({
   subjects,
   overallPct,
@@ -61,12 +63,13 @@ export function StudentAnalyticsVisuals({
   totalAbsent,
   totalHeld,
 }: StudentVisualsProps) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
   const [activeTab, setActiveTab] = useState<"comparison" | "trend">("comparison");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return (

@@ -28,7 +28,7 @@ export function MobileNav({ role }: MobileNavProps) {
     ],
     teacher: [
       { label: "Classes", href: "/teacher", icon: Layers },
-      { label: "Take Attendance", href: "/teacher/session/new", icon: CheckCircle2 },
+      { label: "Attendance", href: "/teacher/session/new", icon: CheckCircle2 },
       { label: "Reports", href: "/teacher/reports", icon: BarChart3 },
     ],
     student: [
@@ -41,8 +41,11 @@ export function MobileNav({ role }: MobileNavProps) {
   const currentLinks = linksByRole[role] || [];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 block border-t border-slate-200/90 bg-white/95 backdrop-blur-md md:hidden safe-area-pb">
-      <div className="flex h-16 items-center justify-around px-2">
+    <nav
+      aria-label="Mobile Navigation"
+      className="fixed bottom-0 left-0 right-0 z-40 block border-t border-slate-200/80 bg-white/90 backdrop-blur-lg md:hidden shadow-lg shadow-slate-900/5 safe-area-pb"
+    >
+      <div className="flex h-16 items-center justify-around px-3 max-w-md mx-auto">
         {currentLinks.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -51,14 +54,21 @@ export function MobileNav({ role }: MobileNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-1 flex-col items-center justify-center py-1 transition-colors",
+                "flex flex-1 flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all duration-150 active:scale-95",
                 isActive
-                  ? "text-blue-600 font-semibold"
-                  : "text-slate-400 hover:text-slate-700"
+                  ? "text-slate-900 font-semibold"
+                  : "text-slate-400 hover:text-slate-700 hover:bg-slate-50"
               )}
             >
-              <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
-              <span className="mt-1 text-[11px] leading-tight">
+              <div
+                className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                  isActive ? "bg-slate-100 text-slate-900" : "text-slate-400"
+                )}
+              >
+                <Icon className={cn("h-4 w-4", isActive && "stroke-[2.2]")} />
+              </div>
+              <span className="mt-0.5 text-[10px] leading-tight font-medium tracking-tight">
                 {item.label}
               </span>
             </Link>
@@ -68,3 +78,4 @@ export function MobileNav({ role }: MobileNavProps) {
     </nav>
   );
 }
+

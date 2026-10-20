@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import {
   AreaChart,
   Area,
@@ -67,13 +67,15 @@ const dayOfWeekData = [
   { day: "Friday", rate: 82.5, color: "#f43f5e" }, // Friday afternoon drop
 ];
 
-export function TeacherAnalyticsVisuals() {
-  const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"trends" | "sections" | "cohorts">("trends");
+const emptySubscribe = () => () => {};
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export function TeacherAnalyticsVisuals() {
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+  const [activeTab, setActiveTab] = useState<"trends" | "sections" | "cohorts">("trends");
 
   if (!mounted) {
     return (

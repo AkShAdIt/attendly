@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Download, X, Share, PlusSquare, Smartphone, Check, Sparkles } from "lucide-react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
+import { Download, X, Share, PlusSquare, Smartphone, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -9,24 +9,27 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+const emptySubscribe = () => () => {};
+
+function checkStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in window.navigator &&
+      Boolean((window.navigator as unknown as { standalone?: boolean }).standalone))
+  );
+}
+
 export function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
+  const isStandalone = useSyncExternalStore(emptySubscribe, checkStandalone, () => false);
   const [isOpen, setIsOpen] = useState(false);
   const [showIOSModal, setShowIOSModal] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    // 1. Check if already installed in standalone mode
-    const isStandaloneMode =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
-
-    if (isStandaloneMode) {
-      setIsStandalone(true);
-      return;
-    }
+    if (isStandalone) return;
 
     // 2. Check dismissal preference (valid for 5 days)
     const dismissedTimestamp = localStorage.getItem("attendly_install_dismissed");
@@ -40,7 +43,8 @@ export function InstallPrompt() {
     // 3. Detect iOS / iPadOS Safari
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice =
-      /iphone|ipad|ipod/.test(userAgent) && !(window as any).MSStream;
+      /iphone|ipad|ipod/.test(userAgent) &&
+      !("MSStream" in (window as unknown as Record<string, unknown>));
     setIsIOS(isIOSDevice);
 
     // 4. Capture Chromium/Android install prompt
@@ -63,7 +67,7 @@ export function InstallPrompt() {
     window.addEventListener("attendly:open-install-prompt", handleOpenEvent);
 
     // For iOS users who haven't dismissed, show install helper after 3 seconds
-    if (isIOSDevice && !isStandaloneMode && !dismissedTimestamp) {
+    if (isIOSDevice && !isStandalone && !dismissedTimestamp) {
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, 3000);
@@ -240,14 +244,7 @@ export function InstallPrompt() {
 }
 
 export function InstallButton({ className = "" }: { className?: string }) {
-  const [isStandalone, setIsStandalone] = useState(false);
-
-  useEffect(() => {
-    const isStandaloneMode =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
-    setIsStandalone(isStandaloneMode);
-  }, []);
+  const isStandalone = useSyncExternalStore(emptySubscribe, checkStandalone, () => false);
 
   if (isStandalone) return null;
 
@@ -256,10 +253,10 @@ export function InstallButton({ className = "" }: { className?: string }) {
       onClick={() => {
         window.dispatchEvent(new CustomEvent("attendly:open-install-prompt"));
       }}
-      className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold transition-colors cursor-pointer ${className}`}
+      className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-semibold shadow-2xs shadow-slate-900/5 transition-all active:scale-[0.98] cursor-pointer ${className}`}
       title="Install Attendly to your device"
     >
-      <Download className="h-3.5 w-3.5 stroke-[2.5]" />
+      <Download className="h-3.5 w-3.5 stroke-[2.2] text-slate-500" />
       <span>Install App</span>
     </button>
   );
